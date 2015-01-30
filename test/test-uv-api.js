@@ -13,8 +13,8 @@ describe('Universal Variable API', function () {
   it('should create a window object', function () {
     expect(window.uv).to.not.be(undefined);
   });
-  it('should expose emit, on, once and reset methods and event and listener arrays only', function () {
-    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once');
+  it('should expose emit, on, once and map methods and event and listener arrays only', function () {
+    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once', 'map');
   });
 
   describe('emit', function () {
@@ -216,6 +216,60 @@ describe('Universal Variable API', function () {
     });
     it('should not throw an error if dispose is called after the first call', function () {
       expect(searchSub.dispose).to.not.throwException();
+    });
+  });
+
+  describe('map', function () {
+    var allEvents, allMap, searchEvents, searchMap, context;
+    beforeEach(function () {
+      uv.emit('view');
+      uv.emit('search', { resultCount: 20 });
+      uv.emit('ec:product.view');
+      uv.emit('view');
+      uv.emit('search', { resultCount: 10 });
+      uv.emit('ec:transaction');
+      allEvents = [];
+      searchEvents = [];
+      allMap = uv.map('*', function (event) {
+        context = this;
+        allEvents.push(event);
+        return event.meta.type;
+      }, {
+        hi: 'dudealicious'
+      });
+      searchMap = uv.map('search', function (event) {
+        searchEvents.push(event);
+        return event.resultCount;
+      });
+    });
+    it('should run over all events given a wildcard', function () {
+      expect(allEvents.length).to.be(6);
+    });
+    it('should run over events of the specified type only', function () {
+      expect(searchEvents.length).to.be(2);
+      expect(searchEvents[0].meta.type).to.be('search');
+      expect(searchEvents[1].meta.type).to.be('search');
+    });
+    it('should return an array map of all events given a wildard', function () {
+      expect(allMap).to.eql([
+        'view',
+        'search',
+        'ec:product.view',
+        'view',
+        'search',
+        'ec:transaction'
+      ]);
+    });
+    it('should return an array map of events of the specified type only', function () {
+      expect(searchMap).to.eql([
+        20,
+        10
+      ]);
+    });
+    it('should execute the iterator in the given context', function () {
+      expect(context).to.eql({
+        hi: 'dudealicious'
+      });
     });
   });
 

@@ -27,19 +27,17 @@
       type: type
     };
     uv.events.push(data);
-    var l;
-    for (var i = 0; i < uv.listeners.length; i++) {
-      l = uv.listeners[i];
-      if (l.type === type || l.type === '*') {
+    forEach(uv.listeners, function (listener) {
+      if (listener.type === type || listener.type === '*') {
         try {
-          l.callback.call(l.context, data);
+          listener.callback.call(listener.context, data);
         } catch (e) {
           if (console && console.error) {
             console.error('Error emitting UV event', e);
           }
         }
       }
-    }
+    });
   };
 
   /**
@@ -87,9 +85,33 @@
   };
 
   /**
+   * Returns a new array by passing the iterator function over the events array in the given context.
+   * @param  {String}   type     The type of events to be mapped.
+   * @param  {Function} iterator The iterator to call for each event.
+   * @param  {Object}   context  Optional. The context in which the iterator is called.
+   * @return {Array}    result   A new array of the mapped events.
+   */
+  uv.map = function map(type, iterator, context) {
+    var result = [];
+    context = context || window;
+    forEach(uv.events, function (event, i) {
+      if (type === '*' || (event.meta.type === type)) {
+        result.push(iterator.call(context, event, i));
+      }
+    });
+    return result;
+  };
+
+  /**
    * Attaches uv to the window.
    */
   window.uv = uv;
+
+  function forEach(list, iterator) {
+    for (var i = 0; i < list.length; i++) {
+      iterator(list[i], i);
+    }
+  }
 
   /**
    * Returns a random 4 digit hexidecimal number.
