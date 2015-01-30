@@ -14,7 +14,7 @@ describe('Universal Variable API', function () {
     expect(window.uv).to.not.be(undefined);
   });
   it('should expose emit, on, once and reset methods and event and listener arrays only', function () {
-    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once', 'reset');
+    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once');
   });
 
   describe('emit', function () {
@@ -219,35 +219,6 @@ describe('Universal Variable API', function () {
     });
   });
 
-  describe('reset', function () {
-    var listenerCalled, afterListenerCalled;
-
-    beforeEach(function () {
-      listenerCalled = false;
-      afterListenerCalled = false;
-      uv.emit('search');
-      uv.on('ec:product.view', function () {
-        listenerCalled = true;
-      });
-      uv.reset();
-      uv.emit('ec:product.view');
-      uv.on('search', function () {
-        afterListenerCalled = true;
-      });
-      uv.emit('search');
-      uv.reset();
-    });
-
-    it('should unsubscribe all listeners', function () {
-      expect(listenerCalled).to.be(false);
-    });
-    it('should continue to call listeners attached after', function () {
-      expect(afterListenerCalled).to.be(true);
-    });
-    it('should empty the events array', function () {
-      expect(uv.events.length).to.be(0);
-    });
-  });
 });
 
 function forEach(list, it) {

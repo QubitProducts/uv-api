@@ -87,14 +87,6 @@
   };
 
   /**
-   * Removes all handlers and clears the events array. Should only be used as a hook for testing.
-   */
-  uv.reset = function reset() {
-    uv.listeners.length = 0;
-    uv.events.length = 0;
-  };
-
-  /**
    * Attaches uv to the window.
    */
   window.uv = uv;
