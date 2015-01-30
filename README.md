@@ -8,7 +8,7 @@ This project contains the source code and tests for the Universal Variable API. 
 Methodology
 ===========
 
-Universal Variable is used for exposing internal data to third party businesses integrating technology with websites and apps. Until recently it has sufficed to provide a global object with an ecommerce-based schema however as web and mobile apps become more prominant it has become difficult to represent data changes as the visitor navigates the app with few or no page reloads. Furthermore the current schema is very restrictive, only allowing a small part of the backend data to be represnted in a common format.
+Universal Variable is used for exposing internal data to third party businesses integrating technology with websites and apps. Until recently it has sufficed to provide a global object with an ecommerce-based schema however as web and mobile apps become more prominant it has become difficult to represent data changes as the visitor navigates the app with few or no page reloads.
 
 
 Moving forward all data is exposed as events using a global API. There is a range of event schemas to represent data for many different use cases, namespacing is used to group events that are related. Event schemas contain nested objects that also have schema. Note that the schemas have been built so that events carry a lot of relevant embedded information to avoid the need to join between events. Though there is a lot of replicated data in the schema, the embeddeding severly reduces lookup time and increases ease of use.
