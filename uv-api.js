@@ -86,18 +86,15 @@
 
   /**
    * Returns a new array by passing the iterator function over the events array in the given context.
-   * @param  {String}   type     The type of events to be mapped.
    * @param  {Function} iterator The iterator to call for each event.
    * @param  {Object}   context  Optional. The context in which the iterator is called.
    * @return {Array}    result   A new array of the mapped events.
    */
-  uv.map = function map(type, iterator, context) {
+  uv.map = function map(iterator, context) {
     var result = [];
     context = context || window;
     forEach(uv.events, function (event, i) {
-      if (type === '*' || (event.meta.type === type)) {
-        result.push(iterator.call(context, event, i));
-      }
+      result.push(iterator.call(context, event, i));
     });
     return result;
   };

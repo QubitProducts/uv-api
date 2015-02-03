@@ -220,7 +220,7 @@ describe('Universal Variable API', function () {
   });
 
   describe('map', function () {
-    var allEvents, allMap, searchEvents, searchMap, context;
+    var allEvents, allMap, context;
     beforeEach(function () {
       uv.emit('view');
       uv.emit('search', { resultCount: 20 });
@@ -229,28 +229,18 @@ describe('Universal Variable API', function () {
       uv.emit('search', { resultCount: 10 });
       uv.emit('ec:transaction');
       allEvents = [];
-      searchEvents = [];
-      allMap = uv.map('*', function (event) {
+      allMap = uv.map(function (event) {
         context = this;
         allEvents.push(event);
         return event.meta.type;
       }, {
         hi: 'dudealicious'
       });
-      searchMap = uv.map('search', function (event) {
-        searchEvents.push(event);
-        return event.resultCount;
-      });
     });
-    it('should run over all events given a wildcard', function () {
+    it('should run over all events', function () {
       expect(allEvents.length).to.be(6);
     });
-    it('should run over events of the specified type only', function () {
-      expect(searchEvents.length).to.be(2);
-      expect(searchEvents[0].meta.type).to.be('search');
-      expect(searchEvents[1].meta.type).to.be('search');
-    });
-    it('should return an array map of all events given a wildard', function () {
+    it('should return an array map of all events', function () {
       expect(allMap).to.eql([
         'view',
         'search',
@@ -258,12 +248,6 @@ describe('Universal Variable API', function () {
         'view',
         'search',
         'ec:transaction'
-      ]);
-    });
-    it('should return an array map of events of the specified type only', function () {
-      expect(searchMap).to.eql([
-        20,
-        10
       ]);
     });
     it('should execute the iterator in the given context', function () {

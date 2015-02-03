@@ -85,7 +85,7 @@ emit('ec:product.view');
 
 `uv.map(type, iterator, [context])`
 
-Returns a new array by passing the __iterator__ function over the events array in the given (optional) __context__. Filters events by the __type__ specified. If a wildcard `*` is passed, all events will be mapped.
+Returns a new array by passing the __iterator__ function over the events array in the given (optional) __context__.
 
 
 ```javascript
@@ -94,15 +94,11 @@ uv.emit('view', {
   type: 'product'
 });
 uv.emit('search');
-uv.map('search', function (event) {
-  console.log(event.meta.type);
-});
-// => logs 'search', 'search'
-var events = uv.map('*', function (event) {
+var events = uv.map(function (event) {
   return event.type;
 });
 console.log(events);
-// => logs ['product']
+// => logs ['search', 'view', 'search']
 ```
 
 
