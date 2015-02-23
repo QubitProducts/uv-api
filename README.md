@@ -25,39 +25,58 @@ API
 
 `uv.emit(type, [data])`
 
-Emits an event with the __type__ and __data__ specified. The __data__ should conform to the schema for the event __type__ emitted.
+Emits an event with the __type__ and __data__ specified. The __data__ should conform to the schema for the event __type__ emitted. All events that are emitted are given a `meta` property with a client timestamp `clientTs`, a client ID `clientId`, and the event type, `type`.
 
 ```javascript
-uv.emit('ec:product.view', {
+uv.emit('ec.ProductView', {
   product: {
     id: '112-334-a',
     price: 6.99,
     name: '18th Birthday Baloon',
-    breadcrumb: ['Party Accessories', 'Birthday Parties']
+    category: ['Party Accessories', 'Birthday Parties']
   },
   color: 'red',
   stock: 6
 });
-// => emits an ec:product.view event
+// => emits an ec.ProductView event
 ```
+
+The emitted event will have meta attached.
+
+```json
+{
+  "meta": {
+    "clientTs": 1423666795563,
+    "clientId": "43d2b1b1-d2b6-7f16-d96c-175efa35",
+    "type": "ec.ProductView"
+  },
+  "product": {
+    "id": "112-334-a",
+    "price": 6.99,
+    "name": "18th Birthday Baloon",
+    "category": ["Party Accessories", "Birthday Parties"]
+  },
+  "color": "red",
+  "stock": 6
+}
+```
+
 
 ### On
 
 `uv.on(type, handler, [context])`
 
-Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event type and event data as arguments and will be bound to the __context__ object, if one is passed. Returns a subscription object which can detatch the handler using the dispose method. If an event __type__ `*` is passed, the handler will execute on all events.
+Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. Returns a subscription object which can detatch the handler using the dispose method. If an event __type__ `*` is passed, the handler will execute on all events.
 
 ```javascript
-uv.on('ec:product.view', function (type, data) {
-  console.log(type);
+uv.on('ec.Product.View', function (data) {
   console.log(data);
 });
-// => logs type and data when an `ec:product.view` event is emitted
-var sub = uv.on('*', function (type, data) {
-  console.log(type);
+// => logs data when an `ec.Product.View` event is emitted
+var sub = uv.on('*', function (data) {
   console.log(data);
 });
-// => logs type and data for all events
+// => logs data for all events
 sub.dispose();
 // => detatches the event handler
 ```
@@ -67,38 +86,37 @@ sub.dispose();
 
 `uv.once(type, handler, [context])`
 
-Attaches an event __handler__ that will be called once, only on the next event emitted that matches the __type__ specified. The __handler__ will be passed the event type and event data as arguments and will be bound to the context object, if one is passed. Returns a subscription object which can detatch the __handler__ using the dispose method. If an event __type__ `*` is passed, the __handler__ will execute on the next event regardless of type.
+Attaches an event __handler__ that will be called once, only on the next event emitted that matches the __type__ specified. The __handler__ will be passed the event data and will be bound to the context object, if one is passed. Returns a subscription object which can detatch the __handler__ using the dispose method. If an event __type__ `*` is passed, the __handler__ will execute on the next event regardless of type.
 
 
 ```javascript
-uv.once('ec:product.view', function (type, data) {
-  console.log(type);
+uv.once('ec.Product.View', function (data) {
   console.log(data);
 });
-emit('ec:product.view');
-// => logs type and data
-emit('ec:product.view');
+emit('ec.Product.View');
+// => logs data
+emit('ec.Product.View');
 // => does not log
 ```
 
 ### Map
 
-`uv.map(type, iterator, [context])`
+`uv.map(iterator, [context])`
 
 Returns a new array by passing the __iterator__ function over the events array in the given (optional) __context__.
 
 
 ```javascript
-uv.emit('search');
-uv.emit('view', {
+uv.emit('Search');
+uv.emit('View', {
   type: 'product'
 });
-uv.emit('search');
+uv.emit('Search');
 var events = uv.map(function (event) {
-  return event.type;
+  return event.meta.type;
 });
 console.log(events);
-// => logs ['search', 'view', 'search']
+// => logs ['Search', 'View', 'Search']
 ```
 
 
