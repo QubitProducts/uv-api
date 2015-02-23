@@ -1,6 +1,6 @@
 {
   "name": "uv-api",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "The Universal Variable API moves business level data into another dimension by introducing a completely event based approach to representing page level data flow.",
   "main": "uv-api.js",
   "scripts": {

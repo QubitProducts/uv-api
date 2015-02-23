@@ -25,7 +25,7 @@ API
 
 `uv.emit(type, [data])`
 
-Emits an event with the __type__ and __data__ specified. The __data__ should conform to the schema for the event __type__ emitted. All events that are emitted are given a `meta` property with a client timestamp `cts`, a client ID `cid`, and the event type, `type`.
+Emits an event with the __type__ and __data__ specified. The __data__ should conform to the schema for the event __type__ emitted. All events that are emitted are given a `meta` property with a client timestamp `clientTs`, a client ID `clientId`, and the event type, `type`.
 
 ```javascript
 uv.emit('ec.ProductView', {
@@ -33,7 +33,7 @@ uv.emit('ec.ProductView', {
     id: '112-334-a',
     price: 6.99,
     name: '18th Birthday Baloon',
-    breadcrumb: ['Party Accessories', 'Birthday Parties']
+    category: ['Party Accessories', 'Birthday Parties']
   },
   color: 'red',
   stock: 6
@@ -46,15 +46,15 @@ The emitted event will have meta attached.
 ```json
 {
   "meta": {
-    "cts": 1423666795563,
-    "cid": "43d2b1b1-d2b6-7f16-d96c-175efa35",
+    "clientTs": 1423666795563,
+    "clientId": "43d2b1b1-d2b6-7f16-d96c-175efa35",
     "type": "ec.ProductView"
   },
   "product": {
     "id": "112-334-a",
     "price": 6.99,
     "name": "18th Birthday Baloon",
-    "breadcrumb": ["Party Accessories", "Birthday Parties"]
+    "category": ["Party Accessories", "Birthday Parties"]
   },
   "color": "red",
   "stock": 6
