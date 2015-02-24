@@ -84,7 +84,7 @@ describe('Universal Variable API', function () {
   describe('on listeners', function () {
     var sub, searchEvents, allEvents, productEvents,
       noneEvents, transactionEvents, errors, errorMemo,
-      allContext;
+      allContext, stack;
 
     beforeEach(function () {
       errors = [];
@@ -93,6 +93,7 @@ describe('Universal Variable API', function () {
       productEvents = [];
       noneEvents = [];
       transactionEvents = [];
+      stack = {};
       if (console && console.error) {
         errorMemo = console.error;
         console.error = function () {
@@ -103,7 +104,9 @@ describe('Universal Variable API', function () {
         searchEvents.push(arguments);
       });
       uv.on('ec:product.view', function () {
-        throw new Error('Some listener error');
+        var e = new Error('Some listener error');
+        e.stack = stack;
+        throw e;
       });
       uv.on('ec:product.view', function () {
         productEvents.push(arguments);
@@ -165,7 +168,7 @@ describe('Universal Variable API', function () {
     it('should throw an error if a listener throws an error', function () {
       expect(errors.length).to.be(1);
       expect(errors[0][0]).to.be('Error emitting UV event');
-      expect(errors[0][1].message).to.be('Some listener error');
+      expect(errors[0][1]).to.be(stack);
     });
     it('should unsubscribe listeners if the dispose method is called', function () {
       expect(transactionEvents.length).to.be(1);

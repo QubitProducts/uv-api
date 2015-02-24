@@ -33,7 +33,7 @@
           listener.callback.call(listener.context, data);
         } catch (e) {
           if (console && console.error) {
-            console.error('Error emitting UV event', e);
+            console.error('Error emitting UV event', e.stack);
           }
         }
       }
