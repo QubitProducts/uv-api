@@ -15,12 +15,12 @@
 
   /**
    * Pushes an event to the events array and triggers any handlers for that event
-   * type, passing the data to that handler.
+   * type, passing the data to that handler. Clones the data to prevent side effects.
    * @param {String} type The type of event.
    * @param {Object} data The data associated with the event.
    */
   uv.emit = function emit(type, data) {
-    data = data || {};
+    data = clone(data || {});
     data.meta = {
       clientId: guid(),
       clientTs: (new Date()).getTime(),
@@ -125,5 +125,21 @@
   function guid() {
     return [s4(), s4(), '-', s4(), '-', s4(), '-', s4(), '-', s4(), s4()]
       .join('');
+  }
+
+  /**
+   * Returns a shallow clone of the input
+   * object.
+   * @param  {Object} input
+   * @return {Object} output
+   */
+  function clone(input) {
+    var output = {};
+    for (var key in input) {
+      if (input.hasOwnProperty(key)) {
+        output[key] = input[key];
+      }
+    }
+    return output;
   }
 }());

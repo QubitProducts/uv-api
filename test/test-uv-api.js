@@ -18,9 +18,12 @@ describe('Universal Variable API', function () {
   });
 
   describe('emit', function () {
-    var t1, t2, eventsLength;
+    var t1, t2, eventsLength, data;
 
     beforeEach(function () {
+      data = {
+        orderId: 1
+      };
       uv.on('ec:transaction', function () {
         eventsLength = uv.events.length;
       });
@@ -32,7 +35,7 @@ describe('Universal Variable API', function () {
         stock: 14
       });
       uv.emit('ec:basket.add');
-      uv.emit('ec:transaction');
+      uv.emit('ec:transaction', data);
       t2 = new Date();
     });
 
@@ -78,6 +81,11 @@ describe('Universal Variable API', function () {
     });
     it('should add events to events array before calling listeners', function () {
       expect(eventsLength).to.be(6);
+    });
+    it('should not mutate the data passed', function () {
+      expect(data).to.eql({
+        orderId: 1
+      });
     });
   });
 
