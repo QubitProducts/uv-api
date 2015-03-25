@@ -42,9 +42,9 @@ describe('Universal Variable API', function () {
     it('should add each event to the events array', function () {
       expect(uv.events.length).to.be(6);
     });
-    it('should create a meta property with clientTs, clientId and type properties', function () {
+    it('should create a meta property with ts, id and type properties', function () {
       forEach(uv.events, function (event) {
-        expect(event.meta).to.only.have.keys('clientTs', 'clientId', 'type');
+        expect(event.meta).to.only.have.keys('ts', 'id', 'type');
       });
     });
     it('should keep data associated with the event', function () {
@@ -66,17 +66,17 @@ describe('Universal Variable API', function () {
     it('should generate a unique ID', function () {
       var ids = [];
       forEach(uv.events, function (event) {
-        expect(event.meta.clientId).to.be.a('string');
+        expect(event.meta.id).to.be.a('string');
         forEach(ids, function (id) {
-          expect(event.meta.clientId).to.not.be(id);
+          expect(event.meta.id).to.not.be(id);
         });
-        ids.push(event.meta.clientId);
+        ids.push(event.meta.id);
       });
     });
     it('should generate a timestamp', function () {
       for (var i = 0; i < 6; i++) {
-        expect(uv.events[i].meta.clientTs >= t1.getTime()).to.be(true);
-        expect(uv.events[i].meta.clientTs <= t2.getTime()).to.be(true);
+        expect(uv.events[i].meta.ts >= t1.getTime()).to.be(true);
+        expect(uv.events[i].meta.ts <= t2.getTime()).to.be(true);
       }
     });
     it('should add events to events array before calling listeners', function () {

@@ -22,8 +22,8 @@
   uv.emit = function emit(type, data) {
     data = clone(data || {});
     data.meta = {
-      clientId: guid(),
-      clientTs: (new Date()).getTime(),
+      id: guid(),
+      ts: (new Date()).getTime(),
       type: type
     };
     uv.events.push(data);
