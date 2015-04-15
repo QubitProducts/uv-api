@@ -37,7 +37,7 @@ uv.emit('ec.ProductView', {
   },
   color: 'red',
   stock: 6
-});
+})
 // => emits an ec.ProductView event
 ```
 
@@ -70,14 +70,14 @@ Attaches an event __handler__ to be called when a certain event __type__ is emit
 
 ```javascript
 uv.on('ec.Product.View', function (data) {
-  console.log(data);
-});
+  console.log(data)
+})
 // => logs data when an `ec.Product.View` event is emitted
 var sub = uv.on('*', function (data) {
-  console.log(data);
-});
+  console.log(data)
+})
 // => logs data for all events
-sub.dispose();
+sub.dispose()
 // => detatches the event handler
 ```
 
@@ -91,11 +91,11 @@ Attaches an event __handler__ that will be called once, only on the next event e
 
 ```javascript
 uv.once('ec.Product.View', function (data) {
-  console.log(data);
-});
-emit('ec.Product.View');
+  console.log(data)
+})
+emit('ec.Product.View')
 // => logs data
-emit('ec.Product.View');
+emit('ec.Product.View')
 // => does not log
 ```
 
@@ -107,15 +107,15 @@ Returns a new array by passing the __iterator__ function over the events array i
 
 
 ```javascript
-uv.emit('Search');
+uv.emit('Search')
 uv.emit('View', {
   type: 'product'
-});
-uv.emit('Search');
+})
+uv.emit('Search')
 var events = uv.map(function (event) {
-  return event.meta.type;
-});
-console.log(events);
+  return event.meta.type
+})
+console.log(events)
 // => logs ['Search', 'View', 'Search']
 ```
 

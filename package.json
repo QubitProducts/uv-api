@@ -18,13 +18,12 @@
   "homepage": "https://github.com/qubitdigital/uv-api",
   "dependencies": {},
   "devDependencies": {
-    "jscs": "^1.10.0",
-    "jshint": "^2.6.0",
     "karma": "^0.12.31",
     "karma-chrome-launcher": "^0.1.7",
     "karma-expect": "^1.1.0",
     "karma-mocha": "^0.1.10",
     "karma-spec-reporter": "0.0.16",
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "standard": "^3.6.1"
   }
 }

@@ -11,7 +11,7 @@
   var uv = {
     events: [],
     listeners: []
-  };
+  }
 
   /**
    * Pushes an event to the events array and triggers any handlers for that event
@@ -19,26 +19,26 @@
    * @param {String} type The type of event.
    * @param {Object} data The data associated with the event.
    */
-  uv.emit = function emit(type, data) {
-    data = clone(data || {});
+  uv.emit = function emit (type, data) {
+    data = clone(data || {})
     data.meta = {
       id: guid(),
       ts: (new Date()).getTime(),
       type: type
-    };
-    uv.events.push(data);
+    }
+    uv.events.push(data)
     forEach(uv.listeners, function (listener) {
       if (listener.type === type || listener.type === '*') {
         try {
-          listener.callback.call(listener.context, data);
+          listener.callback.call(listener.context, data)
         } catch (e) {
           if (console && console.error) {
-            console.error('Error emitting UV event', e.stack);
+            console.error('Error emitting UV event', e.stack)
           }
         }
       }
-    });
-  };
+    })
+  }
 
   /**
    * Attaches an event handler to listen to the type of event specified.
@@ -47,27 +47,27 @@
    * @param   {Object}   context      The context that will be applied to the callback (optional).
    * @returns {Object}   subscription A subscription object which can off the handler using the dispose method.
    */
-  uv.on = function on(type, callback, context) {
-    var ref = {};
+  uv.on = function on (type, callback, context) {
+    var ref = {}
     uv.listeners.push({
       type: type,
       callback: callback,
       context: context || window,
       ref: ref
-    });
+    })
     return {
       dispose: dispose
-    };
+    }
 
-    function dispose() {
+    function dispose () {
       for (var i = 0; i < uv.listeners.length; i++) {
         if (uv.listeners[i].ref === ref) {
-          uv.listeners.splice(i, 1);
-          return;
+          uv.listeners.splice(i, 1)
+          return
         }
       }
     }
-  };
+  }
 
   /**
    * Attaches an event handler to listen to the type of event specified. The handle will only be executed once.
@@ -76,13 +76,13 @@
    * @param   {Object}   context      The context that will be applied to the callback (optional).
    * @returns {Object}   subscription A subscription object which can off the handler using the dispose method.
    */
-  uv.once = function once(type, callback, context) {
+  uv.once = function once (type, callback, context) {
     var subscription = uv.on(type, function () {
-      callback.apply(context || window, arguments);
-      subscription.dispose();
-    });
-    return subscription;
-  };
+      callback.apply(context || window, arguments)
+      subscription.dispose()
+    })
+    return subscription
+  }
 
   /**
    * Returns a new array by passing the iterator function over the events array in the given context.
@@ -90,41 +90,41 @@
    * @param  {Object}   context  Optional. The context in which the iterator is called.
    * @return {Array}    result   A new array of the mapped events.
    */
-  uv.map = function map(iterator, context) {
-    var result = [];
-    context = context || window;
+  uv.map = function map (iterator, context) {
+    var result = []
+    context = context || window
     forEach(uv.events, function (event, i) {
-      result.push(iterator.call(context, event, i));
-    });
-    return result;
-  };
+      result.push(iterator.call(context, event, i))
+    })
+    return result
+  }
 
   /**
    * Attaches uv to the window.
    */
-  window.uv = uv;
+  window.uv = uv
 
-  function forEach(list, iterator) {
+  function forEach (list, iterator) {
     for (var i = 0; i < list.length; i++) {
-      iterator(list[i], i);
+      iterator(list[i], i)
     }
   }
 
   /**
    * Returns a random 4 digit hexidecimal number.
    */
-  function s4() {
+  function s4 () {
     return Math.floor((1 + Math.random()) * 0x10000)
       .toString(16)
-      .substring(1);
+      .substring(1)
   }
 
   /**
    * Returns a guid.
    */
-  function guid() {
+  function guid () {
     return [s4(), s4(), '-', s4(), '-', s4(), '-', s4(), '-', s4(), s4()]
-      .join('');
+      .join('')
   }
 
   /**
@@ -133,13 +133,13 @@
    * @param  {Object} input
    * @return {Object} output
    */
-  function clone(input) {
-    var output = {};
+  function clone (input) {
+    var output = {}
     for (var key in input) {
       if (input.hasOwnProperty(key)) {
-        output[key] = input[key];
+        output[key] = input[key]
       }
     }
-    return output;
+    return output
   }
-}());
+}())
