@@ -20,7 +20,7 @@ describe('Universal Variable API', function () {
   })
 
   describe('emit', function () {
-    var t1, t2, eventsLength, data
+    var eventsLength, data
 
     beforeEach(function () {
       data = {
@@ -29,7 +29,6 @@ describe('Universal Variable API', function () {
       uv.on('ec:transaction', function () {
         eventsLength = uv.events.length
       })
-      t1 = new Date()
       uv.emit('search')
       uv.emit('ec:product.view')
       uv.emit('search')
@@ -38,15 +37,14 @@ describe('Universal Variable API', function () {
       })
       uv.emit('ec:basket.add')
       uv.emit('ec:transaction', data)
-      t2 = new Date()
     })
 
     it('should add each event to the events array', function () {
       expect(uv.events.length).to.be(6)
     })
-    it('should create a meta property with ts, id and type properties', function () {
+    it('should create a meta property with type property', function () {
       forEach(uv.events, function (event) {
-        expect(event.meta).to.only.have.keys('ts', 'id', 'type')
+        expect(event.meta).to.only.have.keys('type')
       })
     })
     it('should keep data associated with the event', function () {
@@ -64,22 +62,6 @@ describe('Universal Variable API', function () {
         'ec:basket.add',
         'ec:transaction'
       ])
-    })
-    it('should generate a unique ID', function () {
-      var ids = []
-      forEach(uv.events, function (event) {
-        expect(event.meta.id).to.be.a('string')
-        forEach(ids, function (id) {
-          expect(event.meta.id).to.not.be(id)
-        })
-        ids.push(event.meta.id)
-      })
-    })
-    it('should generate a timestamp', function () {
-      for (var i = 0; i < 6; i++) {
-        expect(uv.events[i].meta.ts >= t1.getTime()).to.be(true)
-        expect(uv.events[i].meta.ts <= t2.getTime()).to.be(true)
-      }
     })
     it('should add events to events array before calling listeners', function () {
       expect(eventsLength).to.be(6)
