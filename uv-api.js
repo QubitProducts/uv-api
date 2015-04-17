@@ -22,8 +22,6 @@
   uv.emit = function emit (type, data) {
     data = clone(data || {})
     data.meta = {
-      id: guid(),
-      ts: (new Date()).getTime(),
       type: type
     }
     uv.events.push(data)
@@ -108,23 +106,6 @@
     for (var i = 0; i < list.length; i++) {
       iterator(list[i], i)
     }
-  }
-
-  /**
-   * Returns a random 4 digit hexidecimal number.
-   */
-  function s4 () {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1)
-  }
-
-  /**
-   * Returns a guid.
-   */
-  function guid () {
-    return [s4(), s4(), '-', s4(), '-', s4(), '-', s4(), '-', s4(), s4()]
-      .join('')
   }
 
   /**
