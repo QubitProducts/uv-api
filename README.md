@@ -1,6 +1,8 @@
 Universal Variable API
 ----------------------
 
+[ ![Codeship Status for qubitdigital/uv-api](https://codeship.com/projects/f8884a40-8ad8-0132-dedc-76c1126cf0b3/status?branch=master)](https://codeship.com/projects/60163)
+
 _The Universal Variable API moves business level data into another dimension by introducing a completely event based approach to representing page level data flow._
 
 This project contains the source code and tests for the Universal Variable API. A script tag with a minified version of the API should be inserted inline for all html documents, at the top of head, immediately after the `<meta charset... />` tag.
