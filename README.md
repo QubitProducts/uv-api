@@ -1,7 +1,11 @@
 Universal Variable API
 ----------------------
 
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
 [ ![Codeship Status for qubitdigital/uv-api](https://codeship.com/projects/f8884a40-8ad8-0132-dedc-76c1126cf0b3/status?branch=master)](https://codeship.com/projects/60163)
+
+
 
 _The Universal Variable API moves business level data into another dimension by introducing a completely event based approach to representing page level data flow._
 
