@@ -71,6 +71,29 @@ describe('Universal Variable API', function () {
         orderId: 1
       })
     })
+    it('should add recursive events to the end of the queue', function () {
+      uv.events.length = 0
+      var boopFinished = false
+      var meepFinished = false
+      uv.on('boop', function () {
+        uv.emit('meep')
+        expect(uv.events).to.eql([
+          { meta: { type: 'boop' } }
+        ])
+        boopFinished = true
+      })
+      uv.on('meep', function () {
+        expect(boopFinished).to.be(true)
+        meepFinished = true
+      })
+      uv.emit('boop')
+
+      expect(meepFinished).to.be(true)
+      expect(uv.events).to.eql([
+        { meta: { type: 'boop' } },
+        { meta: { type: 'meep' } }
+      ])
+    })
   })
 
   describe('on listeners', function () {

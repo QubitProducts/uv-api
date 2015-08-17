@@ -13,6 +13,8 @@
     listeners: []
   }
 
+  var emittingEvents = []
+
   /**
    * Pushes an event to the events array and triggers any handlers for that event
    * type, passing the data to that handler. Clones the data to prevent side effects.
@@ -24,11 +26,18 @@
     data.meta = {
       type: type
     }
-    uv.events.push(data)
+    emittingEvents.push(data)
+    if (emittingEvents.length === 1) {
+      callHandlers(emittingEvents[0])
+    }
+  }
+
+  function callHandlers (event) {
+    uv.events.push(event)
     forEach(uv.listeners, function (listener) {
-      if (listener.type === type || listener.type === '*') {
+      if (listener.type === event.meta.type || listener.type === '*') {
         try {
-          listener.callback.call(listener.context, data)
+          listener.callback.call(listener.context, event)
         } catch (e) {
           if (console && console.error) {
             console.error('Error emitting UV event', e.stack)
@@ -36,6 +45,10 @@
         }
       }
     })
+    emittingEvents.shift()
+    if (emittingEvents.length > 0) {
+      callHandlers(emittingEvents[0])
+    }
   }
 
   /**
