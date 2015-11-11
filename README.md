@@ -127,3 +127,19 @@ console.log(events)
 ### Events
 
 The events array is a cache of events emitted since the last page load. By iterating over the array it is possible to interpret the user journey or the current state of the page.
+
+### Deliver module
+
+The uv-api is available on the deliver
+
+```bash
+deliver install @qubit/uv-api
+```
+
+The module exports a createUv function if required using commonjs.
+
+```js
+var createUv = require('@qubit/uv-api')
+var uv = createUv()
+uv.emit('ec.View')
+```
