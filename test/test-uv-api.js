@@ -274,7 +274,6 @@ describe('Universal Variable API', function () {
       })
     })
   })
-
 })
 
 function forEach (list, it) {

@@ -1,27 +1,45 @@
 /**
- * Creates a global uv object for emmitting and listening for events.
+ * Export the api to window.uv unless required as a commonjs module.
  */
-(function () {
+if (typeof module === 'object' && module.exports) {
+  module.exports = createUv
+} else if (window) {
+  window.uv = createUv()
+}
+
+function createUv () {
+  /**
+   * Used to prevent recursive event calling.
+   *
+   * @type {Array}
+   */
+  var emittingEvents = []
 
   /**
    * Creates the uv object with empty
    * events and listeners arrays.
+   *
    * @type {Object}
    */
   var uv = {
+    emit: emit,
+    on: on,
+    once: once,
+    map: map,
     events: [],
     listeners: []
   }
 
-  var emittingEvents = []
+  return uv
 
   /**
    * Pushes an event to the events array and triggers any handlers for that event
    * type, passing the data to that handler. Clones the data to prevent side effects.
+   *
    * @param {String} type The type of event.
    * @param {Object} data The data associated with the event.
    */
-  uv.emit = function emit (type, data) {
+  function emit (type, data) {
     data = clone(data || {})
     data.meta = {
       type: type
@@ -53,12 +71,13 @@
 
   /**
    * Attaches an event handler to listen to the type of event specified.
+   *
    * @param   {String}   type         The type of event.
    * @param   {Function} callback     The callback called when the event occurs.
    * @param   {Object}   context      The context that will be applied to the callback (optional).
-   * @returns {Object}   subscription A subscription object which can off the handler using the dispose method.
+   * @returns {Object}   subscription A subscription object that returns a dispose method.
    */
-  uv.on = function on (type, callback, context) {
+  function on (type, callback, context) {
     var ref = {}
     uv.listeners.push({
       type: type,
@@ -81,13 +100,17 @@
   }
 
   /**
-   * Attaches an event handler to listen to the type of event specified. The handle will only be executed once.
+   * Attaches an event handler to listen to the type of event specified.
+   * The handle will only be executed once.
+   *
    * @param   {String}   type         The type of event.
    * @param   {Function} callback     The callback called when the event occurs.
-   * @param   {Object}   context      The context that will be applied to the callback (optional).
-   * @returns {Object}   subscription A subscription object which can off the handler using the dispose method.
+   * @param   {Object}   context      The context that will be applied
+   *                                  to the callback (optional).
+   * @returns {Object}   subscription A subscription object which can off the
+   *                                  handler using the dispose method.
    */
-  uv.once = function once (type, callback, context) {
+  function once (type, callback, context) {
     var subscription = uv.on(type, function () {
       callback.apply(context || window, arguments)
       subscription.dispose()
@@ -96,12 +119,14 @@
   }
 
   /**
-   * Returns a new array by passing the iterator function over the events array in the given context.
+   * Returns a new array by passing the iterator function over the events
+   * array in the given context.
+   *
    * @param  {Function} iterator The iterator to call for each event.
    * @param  {Object}   context  Optional. The context in which the iterator is called.
    * @return {Array}    result   A new array of the mapped events.
    */
-  uv.map = function map (iterator, context) {
+  function map (iterator, context) {
     var result = []
     context = context || window
     forEach(uv.events, function (event, i) {
@@ -109,11 +134,6 @@
     })
     return result
   }
-
-  /**
-   * Attaches uv to the window.
-   */
-  window.uv = uv
 
   function forEach (list, iterator) {
     for (var i = 0; i < list.length; i++) {
@@ -136,4 +156,4 @@
     }
     return output
   }
-}())
+}
