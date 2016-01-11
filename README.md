@@ -70,14 +70,14 @@ The emitted event will have meta attached.
 
 `uv.on(type, handler, [context])`
 
-Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. Returns a subscription object which can detatch the handler using the dispose method. If an event __type__ `*` is passed, the handler will execute on all events.
+Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. Returns a subscription object which can detatch the handler using the dispose method. If a regex is passed, the handler will execute on events that match the regex.
 
 ```javascript
 uv.on('ec.Product.View', function (data) {
   console.log(data)
 })
 // => logs data when an `ec.Product.View` event is emitted
-var sub = uv.on('*', function (data) {
+var sub = uv.on(/.*/, function (data) {
   console.log(data)
 })
 // => logs data for all events
@@ -90,7 +90,7 @@ sub.dispose()
 
 `uv.once(type, handler, [context])`
 
-Attaches an event __handler__ that will be called once, only on the next event emitted that matches the __type__ specified. The __handler__ will be passed the event data and will be bound to the context object, if one is passed. Returns a subscription object which can detatch the __handler__ using the dispose method. If an event __type__ `*` is passed, the __handler__ will execute on the next event regardless of type.
+Attaches an event __handler__ that will be called once, only on the next event emitted that matches the __type__ specified. The __handler__ will be passed the event data and will be bound to the context object, if one is passed. Returns a subscription object which can detatch the __handler__ using the dispose method. If a regex is passed, the handler will execute on the next event to match the regex.
 
 
 ```javascript
