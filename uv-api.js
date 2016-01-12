@@ -53,15 +53,13 @@ function createUv () {
   function callHandlers (event) {
     uv.events.push(event)
     forEach(uv.listeners, function (listener) {
-      var matches = typeof listener.type === 'string'
-        ? listener.type === event.meta.type : listener.type.test(event.meta.type)
-      if (matches) {
-        try {
-          listener.callback.call(listener.context, event)
-        } catch (e) {
-          if (console && console.error) {
-            console.error('Error emitting UV event', e.stack)
-          }
+      if (listener.disposed) return
+      if (!matches(listener.type, event.meta.type)) return
+      try {
+        listener.callback.call(listener.context, event)
+      } catch (e) {
+        if (console && console.error) {
+          console.error('Error emitting UV event', e.stack)
         }
       }
     })
@@ -78,23 +76,40 @@ function createUv () {
    * @param   {Function}     callback     The callback called when the event occurs.
    * @param   {Object}       context      The context that will be applied to the
    *                                      callback (optional).
-   * @returns {Object}                    A subscription object that returns a dispose method.
+   *
+   * @returns {Object}                    A subscription object that
+   *                                      returns a dispose method.
    */
   function on (type, callback, context) {
-    var ref = {}
-    uv.listeners.push({
+    var listener = {
       type: type,
       callback: callback,
-      context: context || window,
-      ref: ref
-    })
+      disposed: false,
+      context: context || window
+    }
+    uv.listeners.push(listener)
     return {
+      replay: replay,
       dispose: dispose
     }
 
+    function replay () {
+      uv.map(function (event) {
+        if (listener.disposed) return
+        if (!matches(type, event.meta.type)) return
+        callback.call(context, event)
+      })
+    }
+
     function dispose () {
+      listener.disposed = true
+
+      /**
+       * Remove listener from array to prevent
+       * memory leak.
+       */
       for (var i = 0; i < uv.listeners.length; i++) {
-        if (uv.listeners[i].ref === ref) {
+        if (uv.listeners[i] === listener) {
           uv.listeners.splice(i, 1)
           return
         }
@@ -110,6 +125,7 @@ function createUv () {
    * @param   {Function}     callback The callback called when the event occurs.
    * @param   {Object}       context  The context that will be applied
    *                                  to the callback (optional).
+   *
    * @returns {Object}                A subscription object which can off the
    *                                  handler using the dispose method.
    */
@@ -127,7 +143,8 @@ function createUv () {
    *
    * @param  {Function} iterator The iterator to call for each event.
    * @param  {Object}   context  Optional. The context in which the iterator is called.
-   * @return {Array}    result   A new array of the mapped events.
+   *
+   * @return {Array}             A new array of the mapped events.
    */
   function map (iterator, context) {
     var result = []
@@ -148,7 +165,8 @@ function createUv () {
    * Returns a shallow clone of the input
    * object.
    * @param  {Object} input
-   * @return {Object} output
+   *
+   * @return {Object}
    */
   function clone (input) {
     var output = {}
@@ -158,5 +176,17 @@ function createUv () {
       }
     }
     return output
+  }
+
+  /**
+   * Returns true if the test string matches
+   * the subject or the test regex matches the subject.
+   * @param  {String|Regex} test
+   * @param  {String}       subject
+   *
+   * @return {Boolean}
+   */
+  function matches (test, subject) {
+    return typeof test === 'string' ? test === subject : test.test(subject)
   }
 }

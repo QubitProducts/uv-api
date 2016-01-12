@@ -214,6 +214,40 @@ describe('uv', function () {
       expect(handler.callCount).to.be(2)
     })
 
+    it('should replay past events if the replay method is called', function () {
+      var handler = sinon.stub()
+
+      uv.emit('ecProductView', { some: 'data' })
+      uv.emit('ecProductView')
+      var subscription = uv.on('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      expect(handler.callCount).to.be(1)
+
+      subscription.replay()
+      expect(handler.callCount).to.be(4)
+
+      expect(handler.getCall(1).args[0]).to.eql({
+        meta: { type: 'ecProductView' },
+        some: 'data'
+      })
+    })
+
+    it('should not replay past events if the subscription is disposed', function () {
+      var handler = sinon.stub()
+
+      uv.emit('ecProductView', { some: 'data' })
+      uv.emit('ecProductView')
+      var subscription = uv.on('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      expect(handler.callCount).to.be(1)
+
+      subscription.dispose()
+      subscription.replay()
+      expect(handler.callCount).to.be(1)
+    })
+
     it('should not throw an error if dispose is called twice', function () {
       var subscription = uv.on('ecProductView', sinon.stub())
       subscription.dispose()
@@ -266,6 +300,28 @@ describe('uv', function () {
       uv.emit('ecView')
 
       expect(onceHandler.callCount).to.be(0)
+    })
+
+    it('should replay past events once if the replay method is called', function () {
+      var handler = sinon.stub()
+
+      uv.emit('ecProductView')
+      uv.emit('ecProductView')
+      var subscription = uv.once('ecProductView', handler)
+
+      subscription.replay()
+      expect(handler.callCount).to.be(1)
+    })
+
+    it('should not replay past events if a matching event has been emitted', function () {
+      var handler = sinon.stub()
+      var subscription = uv.once('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      expect(handler.callCount).to.be(1)
+
+      subscription.replay()
+      expect(handler.callCount).to.be(1)
     })
 
     it('should not throw an error if dispose is called after the first call', function () {
