@@ -53,7 +53,9 @@ function createUv () {
   function callHandlers (event) {
     uv.events.push(event)
     forEach(uv.listeners, function (listener) {
-      if (listener.type === event.meta.type || listener.type === '*') {
+      var matches = typeof listener.type === 'string'
+        ? listener.type === event.meta.type : listener.type.test(event.meta.type)
+      if (matches) {
         try {
           listener.callback.call(listener.context, event)
         } catch (e) {
@@ -72,10 +74,11 @@ function createUv () {
   /**
    * Attaches an event handler to listen to the type of event specified.
    *
-   * @param   {String}   type         The type of event.
-   * @param   {Function} callback     The callback called when the event occurs.
-   * @param   {Object}   context      The context that will be applied to the callback (optional).
-   * @returns {Object}   subscription A subscription object that returns a dispose method.
+   * @param   {String|Regex} type         The type of event.
+   * @param   {Function}     callback     The callback called when the event occurs.
+   * @param   {Object}       context      The context that will be applied to the
+   *                                      callback (optional).
+   * @returns {Object}                    A subscription object that returns a dispose method.
    */
   function on (type, callback, context) {
     var ref = {}
@@ -103,11 +106,11 @@ function createUv () {
    * Attaches an event handler to listen to the type of event specified.
    * The handle will only be executed once.
    *
-   * @param   {String}   type         The type of event.
-   * @param   {Function} callback     The callback called when the event occurs.
-   * @param   {Object}   context      The context that will be applied
+   * @param   {String|Regex} type     The type of event.
+   * @param   {Function}     callback The callback called when the event occurs.
+   * @param   {Object}       context  The context that will be applied
    *                                  to the callback (optional).
-   * @returns {Object}   subscription A subscription object which can off the
+   * @returns {Object}                A subscription object which can off the
    *                                  handler using the dispose method.
    */
   function once (type, callback, context) {

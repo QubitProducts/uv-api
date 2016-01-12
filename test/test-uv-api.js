@@ -99,7 +99,7 @@ describe('Universal Variable API', function () {
   describe('on listeners', function () {
     var sub, searchEvents, allEvents, productEvents,
       noneEvents, transactionEvents, errors, errorMemo,
-      allContext, stack
+      allContext, stack, regexEvents
 
     beforeEach(function () {
       errors = []
@@ -108,6 +108,7 @@ describe('Universal Variable API', function () {
       productEvents = []
       noneEvents = []
       transactionEvents = []
+      regexEvents = []
       stack = {}
       if (console && console.error) {
         errorMemo = console.error
@@ -126,7 +127,7 @@ describe('Universal Variable API', function () {
       uv.on('ec:product.view', function () {
         productEvents.push(arguments)
       })
-      uv.on('*', function () {
+      uv.on(/.*/, function () {
         allEvents.push(arguments)
         allContext = this
       }, { hi: 'dude' })
@@ -135,6 +136,9 @@ describe('Universal Variable API', function () {
       })
       sub = uv.on('ec:transaction', function () {
         transactionEvents.push(arguments)
+      })
+      uv.on(/[^.]*\.View/, function () {
+        regexEvents.push(arguments)
       })
       uv.emit('search', {
         resultCount: 10
@@ -152,6 +156,7 @@ describe('Universal Variable API', function () {
       uv.emit('ec:transaction', {
         orderId: 'oh-so-not-orderlicious'
       })
+      uv.emit('ec.View')
     })
 
     afterEach(function () {
@@ -175,7 +180,7 @@ describe('Universal Variable API', function () {
       expect(noneEvents.length).to.be(0)
     })
     it('should listen to all events given a wildcard type', function () {
-      expect(allEvents.length).to.be(5)
+      expect(allEvents.length).to.be(6)
     })
     it('should be called if another listener throws an error', function () {
       expect(productEvents.length).to.be(1)
@@ -191,6 +196,9 @@ describe('Universal Variable API', function () {
     })
     it('should not throw an error if dispose is called twice', function () {
       expect(sub.dispose).to.not.throwException()
+    })
+    it('should listen to events given a regex', function () {
+      expect(regexEvents.length).to.be(1)
     })
   })
 
