@@ -38,6 +38,21 @@ describe('uv', function () {
       })
     })
 
+    it('should not overwrite meta of an emitted event', function () {
+      uv.emit('ecSearch', {
+        meta: {
+          someMeta: 'thing'
+        }
+      })
+
+      expect(uv.events[0]).to.eql({
+        meta: {
+          type: 'ecSearch',
+          someMeta: 'thing'
+        }
+      })
+    })
+
     it('should keep data associated with the event', function () {
       uv.emit('ecSearch')
       uv.emit('ecProductView', {
