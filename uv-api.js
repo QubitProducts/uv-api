@@ -40,9 +40,8 @@ function createUv () {
    */
   function emit (type, data) {
     data = clone(data || {})
-    data.meta = {
-      type: type
-    }
+    data.meta = data.meta || {}
+    data.meta.type = type
     emittingEvents.push(data)
     if (emittingEvents.length === 1) {
       callHandlers(emittingEvents[0])
