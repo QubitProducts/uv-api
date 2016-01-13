@@ -113,27 +113,6 @@ emit('ec.Product.View')
 // => does not log
 ```
 
-### Map
-
-`uv.map(iterator, [context])`
-
-Returns a new array by passing the __iterator__ function over the events array in the given (optional) __context__.
-
-
-```javascript
-uv.emit('Search')
-uv.emit('View', {
-  type: 'product'
-})
-uv.emit('Search')
-var events = uv.map(function (event) {
-  return event.meta.type
-})
-console.log(events)
-// => logs ['Search', 'View', 'Search']
-```
-
-
 ### Events
 
 The events array is a cache of events emitted since the last page load. By iterating over the array it is possible to interpret the user journey or the current state of the page.

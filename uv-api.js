@@ -25,7 +25,6 @@ function createUv () {
     emit: emit,
     on: on,
     once: once,
-    map: map,
     events: [],
     listeners: []
   }
@@ -50,6 +49,11 @@ function createUv () {
     }
   }
 
+  /**
+   * Calls all the handlers matching an event.
+   *
+   * @param  {Object} event
+   */
   function callHandlers (event) {
     uv.events.push(event)
     forEach(uv.listeners, function (listener) {
@@ -94,7 +98,7 @@ function createUv () {
     }
 
     function replay () {
-      uv.map(function (event) {
+      forEach(uv.events, function (event) {
         if (listener.disposed) return
         if (!matches(type, event.meta.type)) return
         callback.call(context, event)
@@ -138,23 +142,11 @@ function createUv () {
   }
 
   /**
-   * Returns a new array by passing the iterator function over the events
-   * array in the given context.
+   * Iterate over each item in an array.
    *
-   * @param  {Function} iterator The iterator to call for each event.
-   * @param  {Object}   context  Optional. The context in which the iterator is called.
-   *
-   * @return {Array}             A new array of the mapped events.
+   * @param  {Array} list
+   * @param  {Function} iterator
    */
-  function map (iterator, context) {
-    var result = []
-    context = context || window
-    forEach(uv.events, function (event, i) {
-      result.push(iterator.call(context, event, i))
-    })
-    return result
-  }
-
   function forEach (list, iterator) {
     for (var i = 0; i < list.length; i++) {
       iterator(list[i], i)

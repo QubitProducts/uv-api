@@ -12,8 +12,8 @@ describe('uv', function () {
     expect(window.uv).to.not.be(undefined)
   })
 
-  it('should expose emit, on, once and map methods and event and listener arrays only', function () {
-    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once', 'map')
+  it('should expose emit, on and once methods and event and listener arrays only', function () {
+    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once')
   })
 
   describe('emit', function () {
@@ -329,38 +329,6 @@ describe('uv', function () {
       subscription.dispose()
 
       expect(subscription.dispose).to.not.throwException()
-    })
-  })
-
-  describe('map', function () {
-    beforeEach(function () {
-      uv.emit('ecView')
-      uv.emit('ecSearch', { resultCount: 20 })
-      uv.emit('ecProductView')
-      uv.emit('ecView')
-      uv.emit('ecSearch', { resultCount: 10 })
-      uv.emit('ecTransaction')
-    })
-
-    it('should run over all events', function () {
-      var iterator = sinon.spy(function (event) {
-        expect(this).to.eql({
-          hi: 'guy'
-        })
-        return [event.meta.type, event.resultCount].join('-')
-      })
-
-      expect(uv.map(iterator, {
-        hi: 'guy'
-      })).to.eql([
-        'ecView-',
-        'ecSearch-20',
-        'ecProductView-',
-        'ecView-',
-        'ecSearch-10',
-        'ecTransaction-'
-      ])
-      expect(iterator.callCount).to.be(6)
     })
   })
 })
