@@ -1,11 +1,7 @@
-/* global describe, it, beforeEach, afterEach, expect */
+/* global describe, it, beforeEach, afterEach, expect, sinon */
 
-describe('Universal Variable API', function () {
-  var uv
-
-  beforeEach(function () {
-    uv = window.uv
-  })
+describe('uv', function () {
+  var uv = window.uv
 
   afterEach(function () {
     uv.listeners.length = 0
@@ -15,66 +11,76 @@ describe('Universal Variable API', function () {
   it('should create a window object', function () {
     expect(window.uv).to.not.be(undefined)
   })
-  it('should expose emit, on, once and map methods and event and listener arrays only', function () {
-    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once', 'map')
+
+  it('should expose emit, on and once methods and event and listener arrays only', function () {
+    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once')
   })
 
   describe('emit', function () {
-    var eventsLength, data
+    it('should add each event to the events array', function () {
+      uv.emit('ecSearch')
+      uv.emit('ecProductView')
+      expect(uv.events.length).to.be(2)
+    })
 
-    beforeEach(function () {
-      data = {
-        orderId: 1
-      }
-      uv.on('ec:transaction', function () {
+    it('should create a meta property with type property', function () {
+      uv.emit('ecSearch')
+      uv.emit('ecProductView')
+      expect(uv.events[0]).to.eql({
+        meta: {
+          type: 'ecSearch'
+        }
+      })
+      expect(uv.events[1]).to.eql({
+        meta: {
+          type: 'ecProductView'
+        }
+      })
+    })
+
+    it('should keep data associated with the event', function () {
+      uv.emit('ecSearch')
+      uv.emit('ecProductView', {
+        stock: 14
+      })
+
+      expect(uv.events[1]).to.eql({
+        stock: 14,
+        meta: {
+          type: 'ecProductView'
+        }
+      })
+    })
+
+    it('should add events to events array before calling listeners', function () {
+      var eventsLength
+
+      uv.on('ecTransaction', function () {
         eventsLength = uv.events.length
       })
       uv.emit('search')
-      uv.emit('ec:product.view')
+      uv.emit('ecTransaction')
       uv.emit('search')
-      uv.emit('ec:product.view', {
-        stock: 14
-      })
-      uv.emit('ec:basket.add')
-      uv.emit('ec:transaction', data)
+
+      expect(eventsLength).to.be(2)
     })
 
-    it('should add each event to the events array', function () {
-      expect(uv.events.length).to.be(6)
-    })
-    it('should create a meta property with type property', function () {
-      forEach(uv.events, function (event) {
-        expect(event.meta).to.only.have.keys('type')
-      })
-    })
-    it('should keep data associated with the event', function () {
-      expect(uv.events[3]).to.only.have.keys('stock', 'meta')
-      expect(uv.events[3].stock).to.be(14)
-    })
-    it('should store events in the events array in order', function () {
-      expect(map(uv.events, function (event) {
-        return event.meta.type
-      })).to.eql([
-        'search',
-        'ec:product.view',
-        'search',
-        'ec:product.view',
-        'ec:basket.add',
-        'ec:transaction'
-      ])
-    })
-    it('should add events to events array before calling listeners', function () {
-      expect(eventsLength).to.be(6)
-    })
     it('should not mutate the data passed', function () {
+      var data = {
+        orderId: 1
+      }
+
+      uv.emit('ecTransaction', data)
+
       expect(data).to.eql({
         orderId: 1
       })
     })
+
     it('should add recursive events to the end of the queue', function () {
-      uv.events.length = 0
       var boopFinished = false
       var meepFinished = false
+
       uv.on('boop', function () {
         uv.emit('meep')
         expect(uv.events).to.eql([
@@ -96,67 +102,17 @@ describe('Universal Variable API', function () {
     })
   })
 
-  describe('on listeners', function () {
-    var sub, searchEvents, allEvents, productEvents,
-      noneEvents, transactionEvents, errors, errorMemo,
-      allContext, stack, regexEvents
+  describe('on', function () {
+    var errors, errorMemo
 
     beforeEach(function () {
       errors = []
-      searchEvents = []
-      allEvents = []
-      productEvents = []
-      noneEvents = []
-      transactionEvents = []
-      regexEvents = []
-      stack = {}
       if (console && console.error) {
         errorMemo = console.error
         console.error = function () {
           errors.push(arguments)
         }
       }
-      uv.on('search', function () {
-        searchEvents.push(arguments)
-      })
-      uv.on('ec:product.view', function () {
-        var e = new Error('Some listener error')
-        e.stack = stack
-        throw e
-      })
-      uv.on('ec:product.view', function () {
-        productEvents.push(arguments)
-      })
-      uv.on(/.*/, function () {
-        allEvents.push(arguments)
-        allContext = this
-      }, { hi: 'dude' })
-      uv.on('none', function () {
-        noneEvents.push(arguments)
-      })
-      sub = uv.on('ec:transaction', function () {
-        transactionEvents.push(arguments)
-      })
-      uv.on(/[^.]*\.View/, function () {
-        regexEvents.push(arguments)
-      })
-      uv.emit('search', {
-        resultCount: 10
-      })
-      uv.emit('search', {
-        resultCount: 20
-      })
-      uv.emit('ec:product.view', {
-        id: 'a-fabulous-product'
-      })
-      uv.emit('ec:transaction', {
-        orderId: 'oh-so-orderlicious'
-      })
-      sub.dispose()
-      uv.emit('ec:transaction', {
-        orderId: 'oh-so-not-orderlicious'
-      })
-      uv.emit('ec.View')
     })
 
     afterEach(function () {
@@ -164,136 +120,215 @@ describe('Universal Variable API', function () {
     })
 
     it('should be called in the specified context', function () {
-      expect(allContext).to.eql({
-        hi: 'dude'
-      })
+      var context
+
+      uv.on('ecView', function () {
+        context = this
+      }, { hi: 'dude' })
+      uv.emit('ecView')
+
+      expect(context).to.eql({ hi: 'dude' })
     })
+
     it('should listen to the specified type', function () {
-      expect(searchEvents.length).to.be(2)
-      forEach(searchEvents, function (args) {
-        expect(args[0].meta.type).to.be('search')
+      var searchHandler = sinon.stub()
+      var productHandler = sinon.stub()
+
+      uv.on('ecSearch', searchHandler)
+      uv.on('ecProductView', productHandler)
+      uv.emit('ecSearch')
+      uv.emit('ecSearch')
+      uv.emit('ecProductView')
+      uv.emit('ecSearch')
+
+      expect(searchHandler.callCount).to.be(3)
+      expect(productHandler.callCount).to.be(1)
+    })
+
+    it('should be passed the event', function () {
+      var searchHandler = sinon.stub()
+      var productHandler = sinon.stub()
+
+      uv.on('ecSearch', searchHandler)
+      uv.on('ecProductView', productHandler)
+      uv.emit('ecSearch', { resultCount: 3 })
+      uv.emit('ecProductView', { name: 'uhh erm thing' })
+      uv.emit('ecSearch')
+
+      expect(searchHandler.getCall(0).args.length).to.be(1)
+      expect(searchHandler.getCall(0).args[0]).to.eql({
+        meta: { type: 'ecSearch' },
+        resultCount: 3
       })
-      expect(searchEvents[0][0].resultCount).to.be(10)
-      expect(searchEvents[1][0].resultCount).to.be(20)
+
+      expect(productHandler.getCall(0).args[0]).to.eql({
+        meta: { type: 'ecProductView' },
+        name: 'uhh erm thing'
+      })
+
+      expect(searchHandler.getCall(1).args.length).to.be(1)
+      expect(searchHandler.getCall(1).args[0]).to.eql({
+        meta: { type: 'ecSearch' }
+      })
     })
-    it('should not listen to events emitted with a different type', function () {
-      expect(noneEvents.length).to.be(0)
-    })
-    it('should listen to all events given a wildcard type', function () {
-      expect(allEvents.length).to.be(6)
-    })
+
     it('should be called if another listener throws an error', function () {
-      expect(productEvents.length).to.be(1)
+      var badHandler = sinon.spy(function () { throw new Error() })
+      var handler = sinon.stub()
+
+      uv.on('ecProductView', badHandler)
+      uv.on('ecProductView', handler)
+      uv.on('ecProductView', badHandler)
+
+      uv.emit('ecProductView')
+
+      expect(handler.callCount).to.be(1)
+      expect(badHandler.callCount).to.be(2)
     })
+
     it('should throw an error if a listener throws an error', function () {
+      var stack = {}
+
+      uv.on('ecProductView', function () {
+        var e = new Error('Some listener error')
+        e.stack = stack
+        throw e
+      })
+      uv.emit('ecProductView')
+
       expect(errors.length).to.be(1)
       expect(errors[0][0]).to.be('Error emitting UV event')
       expect(errors[0][1]).to.be(stack)
     })
+
     it('should unsubscribe listeners if the dispose method is called', function () {
-      expect(transactionEvents.length).to.be(1)
-      expect(transactionEvents[0][0].orderId).to.be('oh-so-orderlicious')
+      var handler = sinon.stub()
+      var subscription = uv.on('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      uv.emit('ecProductView')
+
+      subscription.dispose()
+      uv.emit('ecProductView')
+
+      expect(handler.callCount).to.be(2)
     })
+
+    it('should replay past events if the replay method is called', function () {
+      var handler = sinon.stub()
+
+      uv.emit('ecProductView', { some: 'data' })
+      uv.emit('ecProductView')
+      var subscription = uv.on('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      expect(handler.callCount).to.be(1)
+
+      subscription.replay()
+      expect(handler.callCount).to.be(4)
+
+      expect(handler.getCall(1).args[0]).to.eql({
+        meta: { type: 'ecProductView' },
+        some: 'data'
+      })
+    })
+
+    it('should not replay past events if the subscription is disposed', function () {
+      var handler = sinon.stub()
+
+      uv.emit('ecProductView', { some: 'data' })
+      uv.emit('ecProductView')
+      var subscription = uv.on('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      expect(handler.callCount).to.be(1)
+
+      subscription.dispose()
+      subscription.replay()
+      expect(handler.callCount).to.be(1)
+    })
+
     it('should not throw an error if dispose is called twice', function () {
-      expect(sub.dispose).to.not.throwException()
+      var subscription = uv.on('ecProductView', sinon.stub())
+      subscription.dispose()
+
+      expect(subscription.dispose).to.not.throwException()
     })
+
     it('should listen to events given a regex', function () {
-      expect(regexEvents.length).to.be(1)
+      var viewHandler = sinon.stub()
+      var allHandler = sinon.stub()
+
+      uv.on(/^[a-z]+View$/, viewHandler)
+      uv.on(/.*/, allHandler)
+      uv.emit('ecView')
+      uv.emit('ecProduct')
+      uv.emit('trView')
+
+      expect(viewHandler.callCount).to.be(2)
+      expect(allHandler.callCount).to.be(3)
     })
   })
 
-  describe('once listeners', function () {
-    var searchEvents, productEvents, searchSub, searchContext
-
-    beforeEach(function () {
-      searchEvents = []
-      productEvents = []
-      searchSub = uv.once('search', function () {
-        searchEvents.push(arguments)
-        searchContext = this
-      }, {
-        no: 'way'
-      })
-      var productSub = uv.once('ec:product.view', function () {
-        productEvents.push(arguments)
-      })
-      uv.emit('search', {
-        resultCount: 10
-      })
-      uv.emit('search', {
-        resultCount: 20
-      })
-      productSub.dispose()
-      uv.emit('ec:product.view', {
-        id: 'a-fabulous-product'
-      })
-    })
-
+  describe('once', function () {
     it('should be called in the specified context', function () {
-      expect(searchContext).to.eql({
-        no: 'way'
-      })
-    })
-    it('should only be called once', function () {
-      expect(searchEvents.length).to.be(1)
-    })
-    it('should not be called if dispose is called', function () {
-      expect(productEvents.length).to.be(0)
-    })
-    it('should not throw an error if dispose is called after the first call', function () {
-      expect(searchSub.dispose).to.not.throwException()
-    })
-  })
+      var context
 
-  describe('map', function () {
-    var allEvents, allMap, context
-    beforeEach(function () {
-      uv.emit('view')
-      uv.emit('search', { resultCount: 20 })
-      uv.emit('ec:product.view')
-      uv.emit('view')
-      uv.emit('search', { resultCount: 10 })
-      uv.emit('ec:transaction')
-      allEvents = []
-      allMap = uv.map(function (event) {
+      uv.once('ecView', function () {
         context = this
-        allEvents.push(event)
-        return event.meta.type
-      }, {
-        hi: 'dudealicious'
-      })
+      }, { hi: 'dude' })
+      uv.emit('ecView')
+
+      expect(context).to.eql({ hi: 'dude' })
     })
-    it('should run over all events', function () {
-      expect(allEvents.length).to.be(6)
+
+    it('should only be called once', function () {
+      var onceHandler = sinon.stub()
+      uv.once('ecView', onceHandler)
+
+      uv.emit('ecView')
+      uv.emit('ecView')
+      uv.emit('ecView')
+
+      expect(onceHandler.callCount).to.be(1)
     })
-    it('should return an array map of all events', function () {
-      expect(allMap).to.eql([
-        'view',
-        'search',
-        'ec:product.view',
-        'view',
-        'search',
-        'ec:transaction'
-      ])
+
+    it('should not be called if dispose is called', function () {
+      var onceHandler = sinon.stub()
+      var subscription = uv.once('ecView', onceHandler)
+      subscription.dispose()
+      uv.emit('ecView')
+
+      expect(onceHandler.callCount).to.be(0)
     })
-    it('should execute the iterator in the given context', function () {
-      expect(context).to.eql({
-        hi: 'dudealicious'
-      })
+
+    it('should replay past events once if the replay method is called', function () {
+      var handler = sinon.stub()
+
+      uv.emit('ecProductView')
+      uv.emit('ecProductView')
+      var subscription = uv.once('ecProductView', handler)
+
+      subscription.replay()
+      expect(handler.callCount).to.be(1)
+    })
+
+    it('should not replay past events if a matching event has been emitted', function () {
+      var handler = sinon.stub()
+      var subscription = uv.once('ecProductView', handler)
+
+      uv.emit('ecProductView')
+      expect(handler.callCount).to.be(1)
+
+      subscription.replay()
+      expect(handler.callCount).to.be(1)
+    })
+
+    it('should not throw an error if dispose is called after the first call', function () {
+      var subscription = uv.once('ecView', sinon.stub())
+      subscription.dispose()
+
+      expect(subscription.dispose).to.not.throwException()
     })
   })
 })
-
-function forEach (list, it) {
-  for (var i = 0; i < list.length; i++) {
-    it(list[i], i)
-  }
-}
-
-function map (list, it) {
-  var result = []
-  forEach(list, function (val, i) {
-    result.push(it(val, i))
-  })
-  return result
-}

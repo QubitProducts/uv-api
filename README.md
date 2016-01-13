@@ -70,19 +70,28 @@ The emitted event will have meta attached.
 
 `uv.on(type, handler, [context])`
 
-Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. Returns a subscription object which can detatch the handler using the dispose method. If a regex is passed, the handler will execute on events that match the regex.
+Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. If a regex is passed, the handler will execute on events that match the regex.
 
 ```javascript
 uv.on('ec.Product.View', function (data) {
   console.log(data)
 })
 // => logs data when an `ec.Product.View` event is emitted
-var sub = uv.on(/.*/, function (data) {
+
+var subscription = uv.on(/.*/, function (data) {
   console.log(data)
 })
 // => logs data for all events
-sub.dispose()
+```
+
+The on method returns a subscription object which can detatch the handler using the dispose method and can also be used to replay events currently in the event array. Note that subscription that have been disposed will not call the handler when replay is called.
+
+```
+subscription.dispose()
 // => detatches the event handler
+
+subscription.replay()
+// => calls the handler for all events currently in uv.events
 ```
 
 
@@ -99,30 +108,10 @@ uv.once('ec.Product.View', function (data) {
 })
 emit('ec.Product.View')
 // => logs data
+
 emit('ec.Product.View')
 // => does not log
 ```
-
-### Map
-
-`uv.map(iterator, [context])`
-
-Returns a new array by passing the __iterator__ function over the events array in the given (optional) __context__.
-
-
-```javascript
-uv.emit('Search')
-uv.emit('View', {
-  type: 'product'
-})
-uv.emit('Search')
-var events = uv.map(function (event) {
-  return event.meta.type
-})
-console.log(events)
-// => logs ['Search', 'View', 'Search']
-```
-
 
 ### Events
 
