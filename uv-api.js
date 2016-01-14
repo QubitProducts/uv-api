@@ -91,10 +91,12 @@ function createUv () {
       context: context || window
     }
     uv.listeners.push(listener)
-    return {
+
+    var subscription = {
       replay: replay,
       dispose: dispose
     }
+    return subscription
 
     function replay () {
       forEach(uv.events, function (event) {
@@ -102,6 +104,7 @@ function createUv () {
         if (!matches(type, event.meta.type)) return
         callback.call(context, event)
       })
+      return subscription
     }
 
     function dispose () {
@@ -111,12 +114,12 @@ function createUv () {
        * Remove listener from array to prevent
        * memory leak.
        */
-      for (var i = 0; i < uv.listeners.length; i++) {
-        if (uv.listeners[i] === listener) {
+      forEach(uv.listeners, function (l, i) {
+        if (l === listener) {
           uv.listeners.splice(i, 1)
-          return
         }
-      }
+      })
+      return subscription
     }
   }
 

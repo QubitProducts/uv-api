@@ -248,6 +248,12 @@ describe('uv', function () {
       })
     })
 
+    it('should return subscription from replay and dispose methods', function () {
+      var subscription = uv.on('ecProductView', sinon.stub())
+      expect(subscription.replay()).to.be(subscription)
+      expect(subscription.dispose()).to.be(subscription)
+    })
+
     it('should not replay past events if the subscription is disposed', function () {
       var handler = sinon.stub()
 
