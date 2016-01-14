@@ -33,7 +33,7 @@ API
 
 Emits an event with the __type__ and __data__ specified. The __data__ should conform to the schema for the event __type__ emitted. All events that are emitted are given a `meta` property with the event `type`.
 
-```javascript
+```js
 uv.emit('ec.ProductView', {
   product: {
     id: '112-334-a',
@@ -72,7 +72,7 @@ The emitted event will have meta attached.
 
 Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. If a regex is passed, the handler will execute on events that match the regex.
 
-```javascript
+```js
 uv.on('ec.Product.View', function (data) {
   console.log(data)
 })
@@ -86,7 +86,7 @@ var subscription = uv.on(/.*/, function (data) {
 
 The on method returns a subscription object which can detatch the handler using the dispose method and can also be used to replay events currently in the event array. Note that subscription that have been disposed will not call the handler when replay is called.
 
-```
+```js
 subscription.dispose()
 // => detatches the event handler
 
@@ -102,7 +102,7 @@ subscription.replay()
 Attaches an event __handler__ that will be called once, only on the next event emitted that matches the __type__ specified. The __handler__ will be passed the event data and will be bound to the context object, if one is passed. Returns a subscription object which can detatch the __handler__ using the dispose method. If a regex is passed, the handler will execute on the next event to match the regex.
 
 
-```javascript
+```js
 uv.once('ec.Product.View', function (data) {
   console.log(data)
 })
