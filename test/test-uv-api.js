@@ -229,6 +229,17 @@ describe('uv', function () {
       expect(handler.callCount).to.be(2)
     })
 
+    it('should not duplicate recursive events on replay', function () {
+      var allEventsHandler = sinon.spy(function (e) {
+        if (e.meta.type === 'a') {
+          uv.emit('b')
+        }
+      })
+      uv.emit('a')
+      uv.on(/.*/, allEventsHandler).replay()
+      expect(allEventsHandler.callCount).to.be(2)
+    })
+
     it('should replay past events if the replay method is called', function () {
       var handler = sinon.stub()
 
