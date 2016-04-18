@@ -150,7 +150,8 @@ function createUv () {
    * @param  {Function} iterator
    */
   function forEach (list, iterator) {
-    for (var i = 0; i < list.length; i++) {
+    var length = list.length
+    for (var i = 0; i < length; i++) {
       iterator(list[i], i)
     }
   }
