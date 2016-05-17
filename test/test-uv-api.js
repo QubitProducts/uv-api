@@ -287,6 +287,20 @@ describe('uv', function () {
       expect(subscription.dispose).to.not.throwException()
     })
 
+    it('should not affect another handler when dispose is called', function () {
+      var handlerA = sinon.spy(function () {
+        subscription.dispose()
+      })
+      var subscription = uv.on('ecView', handlerA)
+
+      var handlerB = sinon.stub()
+      uv.on('ecView', handlerB)
+
+      uv.emit('ecView')
+      expect(handlerA.callCount).to.be(1)
+      expect(handlerB.callCount).to.be(1)
+    })
+
     it('should listen to events given a regex', function () {
       var viewHandler = sinon.stub()
       var allHandler = sinon.stub()
