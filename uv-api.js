@@ -46,6 +46,14 @@ function createUv () {
     if (emittingEvents.length === 1) {
       callHandlers(emittingEvents[0])
     }
+
+    /**
+     * Remove disposed listeners
+     * to prevent memory leak.
+     */
+    uv.listeners = filter(uv.listeners, function (l) {
+      return !l.disposed
+    })
   }
 
   /**
@@ -109,16 +117,6 @@ function createUv () {
 
     function dispose () {
       listener.disposed = true
-
-      /**
-       * Remove listener from array to prevent
-       * memory leak.
-       */
-      forEach(uv.listeners, function (l, i) {
-        if (l === listener) {
-          uv.listeners.splice(i, 1)
-        }
-      })
       return subscription
     }
   }
@@ -183,5 +181,22 @@ function createUv () {
    */
   function matches (test, subject) {
     return typeof test === 'string' ? test === subject : test.test(subject)
+  }
+
+  /**
+   * Returns a new array containing the items in
+   * array for which predicate returns true.
+   * @param  {Array}   list
+   * @param  {Function} iterator
+   *
+   * @return {Array}
+   */
+  function filter (list, iterator) {
+    var l = list.length
+    var output = []
+    for (var i = 0; i < l; i++) {
+      if (iterator(list[i])) output.push(list[i])
+    }
+    return output
   }
 }
