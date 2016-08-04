@@ -1,9 +1,18 @@
 /**
  * Export the api to window.uv unless required as a commonjs module.
  */
-if (typeof module === 'object' && module.exports) {
-  module.exports = createUv
-} else if (window) {
+var modulePresent = false;
+
+try {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = createUv
+    modulePresent = true
+  }
+} catch (ex) {
+  // workaround: just catch in case browser complains for unset module prop.
+}
+
+if (!modulePresent && window) {
   window.uv = createUv()
 }
 
