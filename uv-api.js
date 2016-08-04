@@ -6,7 +6,7 @@ var modulePresent = false;
 try {
   if (typeof module === 'object' && module.exports) {
     module.exports = createUv
-    modulePresent = true;
+    modulePresent = true
   }
 } catch (ex) {
   // workaround: just catch in case browser complains for unset module prop.
