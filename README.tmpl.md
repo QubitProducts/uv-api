@@ -24,6 +24,15 @@ Compatibility
 
 Tested in IE8+, Firefox, Opera, Chrome and Safari.
 
+Minified snippet
+===
+
+For embedding onto client websites
+
+```js
+${minified_js}
+```
+
 API
 ===
 
@@ -131,10 +140,4 @@ The module exports a createUv function if required using commonjs.
 var createUv = require('@qubit/uv-api')
 var uv = createUv()
 uv.emit('ec.View')
-```
-
-### Minified snippet
-
-```js
-${minified_js}
 ```
