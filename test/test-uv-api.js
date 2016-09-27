@@ -12,8 +12,8 @@ describe('uv', function () {
     expect(window.uv).to.not.be(undefined)
   })
 
-  it('should expose emit, on and once methods and event and listener arrays only', function () {
-    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once')
+  it('should expose emit, on, once and logLevel methods and event and listener arrays', function () {
+    expect(window.uv).to.only.have.keys('events', 'listeners', 'emit', 'on', 'once', 'logLevel')
   })
 
   describe('emit', function () {
@@ -98,8 +98,8 @@ describe('uv', function () {
 
       uv.on('boop', function () {
         uv.emit('meep')
-        expect(uv.events).to.eql([
-          { meta: { type: 'boop' } }
+        expect(map(uv.events, function (e) { return e.meta.type })).to.eql([
+          'boop'
         ])
         boopFinished = true
       })
@@ -110,9 +110,9 @@ describe('uv', function () {
       uv.emit('boop')
 
       expect(meepFinished).to.be(true)
-      expect(uv.events).to.eql([
-        { meta: { type: 'boop' } },
-        { meta: { type: 'meep' } }
+      expect(map(uv.events, function (e) { return e.meta.type })).to.eql([
+        'boop',
+        'meep'
       ])
     })
   })
@@ -280,6 +280,95 @@ describe('uv', function () {
       expect(handler.callCount).to.be(1)
     })
 
+    it('should handle events emitted in replay after replay is finished', function () {
+      uv.emit('woo')
+      uv.emit('woop')
+      uv.emit('woo')
+
+      var expectedOrder = [
+        'woo',
+        'woop',
+        'woo',
+        'boop',
+        'boop'
+      ]
+
+      var handler = sinon.stub()
+      uv.on(/.*/, handler)
+
+      var i = 0
+      uv.on(/.*/, function (e) {
+        if (e.meta.type === 'woo') uv.emit('boop')
+        expect(e.meta.type).to.be(expectedOrder[i])
+        expect(handler.callCount).to.be(0)
+        i++
+      }).replay()
+
+      expect(handler.callCount).to.be(2)
+      expect(map(uv.events, function (e) { return e.meta.type })).to.eql(expectedOrder)
+    })
+
+    it('should handle events after replay is finished for recursive replays', function () {
+      uv.emit('foo')
+      uv.emit('bar')
+      uv.emit('boop')
+      uv.emit('terrific')
+
+      var handler = sinon.stub()
+
+      uv.on(/.*/, function (e) {
+        if (e.meta.type === 'boop') uv.emit('fantastic')
+
+        var sub = uv.on(/.*/, handler).replay()
+        sub.dispose()
+
+        if (e.meta.type === 'bar') uv.emit('nice')
+      }).replay()
+
+      expect(map(uv.events, function (e) { return e.meta.type })).to.eql([
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'nice',
+        'fantastic'
+      ])
+
+      var handlerEvents = []
+      for (var i = 0; i < handler.callCount; i++) {
+        handlerEvents.push(handler.getCall(i).args[0].meta.type)
+      }
+      expect(handlerEvents).to.eql([
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'nice',
+        'foo',
+        'bar',
+        'boop',
+        'terrific',
+        'nice',
+        'fantastic'
+      ])
+    })
+
     it('should not throw an error if dispose is called twice', function () {
       var subscription = uv.on('ecProductView', sinon.stub())
       subscription.dispose()
@@ -378,3 +467,11 @@ describe('uv', function () {
     })
   })
 })
+
+function map (list, fn) {
+  var output = []
+  for (var i = 0; i < list.length; i++) {
+    output.push(fn(list[i]))
+  }
+  return output
+}
