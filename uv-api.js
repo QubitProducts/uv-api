@@ -13,7 +13,35 @@ function createUv () {
    *
    * @type {Array}
    */
-  var emittingEvents = []
+  var eventQueue = []
+  var callingHandlers = 0
+
+  /**
+   * Simple log class
+   *
+   * @type {Object}
+   */
+  var log = {
+    info: function logInfo () {
+      if (log.level > logLevel.INFO) return
+      if (console && console.info) {
+        console.info.apply(console, arguments)
+      }
+    },
+    error: function logError () {
+      if (log.level > logLevel.ERROR) return
+      if (console && console.error) {
+        console.error.apply(console, arguments)
+      }
+    }
+  }
+
+  logLevel.ALL = 0
+  logLevel.INFO = 1
+  logLevel.ERROR = 2
+  logLevel.OFF = 3
+
+  logLevel(logLevel.ERROR)
 
   /**
    * Creates the uv object with empty
@@ -22,30 +50,42 @@ function createUv () {
    * @type {Object}
    */
   var uv = {
-    emit: emit,
     on: on,
+    emit: emit,
     once: once,
     events: [],
-    listeners: []
+    listeners: [],
+    logLevel: logLevel
   }
 
   return uv
 
   /**
+   * Sets the log level for the API.
+   *
+   * @param  {Number} level   Should be one of the constants
+   *                          set on the logLevel function.
+   */
+  function logLevel (level) {
+    log.level = level
+  }
+
+  /**
    * Pushes an event to the events array and triggers any handlers for that event
    * type, passing the data to that handler. Clones the data to prevent side effects.
    *
-   * @param {String} type The type of event.
-   * @param {Object} data The data associated with the event.
+   * @param {String} type  The type of event.
+   * @param {Object} event The data associated with the event.
    */
-  function emit (type, data) {
-    data = clone(data || {})
-    data.meta = data.meta || {}
-    data.meta.type = type
-    emittingEvents.push(data)
-    if (emittingEvents.length === 1) {
-      callHandlers(emittingEvents[0])
-    }
+  function emit (type, event) {
+    log.info(type, 'event emitted')
+
+    event = clone(event || {})
+    event.meta = event.meta || {}
+    event.meta.type = type
+
+    eventQueue.push(event)
+    processNextEvent()
 
     /**
      * Remove disposed listeners
@@ -54,30 +94,6 @@ function createUv () {
     uv.listeners = filter(uv.listeners, function (l) {
       return !l.disposed
     })
-  }
-
-  /**
-   * Calls all the handlers matching an event.
-   *
-   * @param  {Object} event
-   */
-  function callHandlers (event) {
-    uv.events.push(event)
-    forEach(uv.listeners, function (listener) {
-      if (listener.disposed) return
-      if (!matches(listener.type, event.meta.type)) return
-      try {
-        listener.callback.call(listener.context, event)
-      } catch (e) {
-        if (console && console.error) {
-          console.error('Error emitting UV event', e.stack)
-        }
-      }
-    })
-    emittingEvents.shift()
-    if (emittingEvents.length > 0) {
-      callHandlers(emittingEvents[0])
-    }
   }
 
   /**
@@ -92,6 +108,8 @@ function createUv () {
    *                                      returns a dispose method.
    */
   function on (type, callback, context) {
+    log.info('Attaching event handler for', type)
+
     var listener = {
       type: type,
       callback: callback,
@@ -107,17 +125,69 @@ function createUv () {
     return subscription
 
     function replay () {
-      forEach(uv.events, function (event) {
-        if (listener.disposed) return
-        if (!matches(type, event.meta.type)) return
-        callback.call(context, event)
+      log.info('Replaying events')
+      queueEmittedEvents(function () {
+        forEach(uv.events, function (event) {
+          if (listener.disposed) return
+          if (!matches(type, event.meta.type)) return
+          callback.call(context, event)
+        })
       })
       return subscription
     }
 
     function dispose () {
+      log.info('Disposing event handler')
       listener.disposed = true
       return subscription
+    }
+  }
+
+  /**
+   * Prevents emitted events from being
+   * processed until fn finishes.
+   *
+   * @param  {Function} fn
+   */
+  function queueEmittedEvents (fn) {
+    log.info('Calling event handlers')
+    callingHandlers++
+    try { fn() } catch (e) {
+      log.error('UV API Error', e.stack)
+    }
+    callingHandlers--
+    processNextEvent()
+  }
+
+  /**
+   * Processes the next event on the
+   * eventQueue.
+   */
+  function processNextEvent () {
+    if (eventQueue.length === 0) {
+      log.info('No more events to process')
+    }
+
+    if (eventQueue.length > 0 && callingHandlers > 0) {
+      log.info('Event will be processed later')
+    }
+
+    if (eventQueue.length > 0 && callingHandlers === 0) {
+      log.info('Processing event')
+
+      var event = eventQueue.shift()
+      uv.events.push(event)
+      queueEmittedEvents(function () {
+        forEach(uv.listeners, function (listener) {
+          if (listener.disposed) return
+          if (!matches(listener.type, event.meta.type)) return
+          try {
+            listener.callback.call(listener.context, event)
+          } catch (e) {
+            log.error('Error emitting UV event', e.stack)
+          }
+        })
+      })
     }
   }
 

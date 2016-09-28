@@ -144,3 +144,14 @@ var createUv = require('@qubit/uv-api')
 var uv = createUv()
 uv.emit('ec.View')
 ```
+
+### Log Level
+
+The API has a `logLevel` method that can be used to set logging to `OFF`, `ERROR`, `INFO` or `ALL`. The default log level is `ERROR`.
+```js
+var createUv = require('@qubit/uv-api')
+var uv = createUv()
+
+// Turns on info logging (verbose)
+uv.logLevel(uv.logLevel.INFO)
+```
