@@ -1,13 +1,13 @@
-.PHONY: test, build, bootstrap
+.PHONY: test build bootstrap
 
 BIN = ./node_modules/.bin
 
-node_modules:
+bootstrap:
 	@npm install
 
-test: node_modules
+test: bootstrap
 	@$(BIN)/standard
 	@./node_modules/karma/bin/karma start --single-run=true
 
-build: node_modules
+build: bootstrap
 	@node make-readme.js
