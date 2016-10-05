@@ -33,7 +33,7 @@ Minified snippet
 For embedding onto client websites
 
 ```js
-function createUv(){function e(e,n){n=s(n||{}),n.meta=n.meta||{},n.meta.type=e,u.push(n),1===u.length&&t(u[0]),a.listeners=c(a.listeners,function(e){return!e.disposed})}function t(e){a.events.push(e),o(a.listeners,function(t){if(!t.disposed&&i(t.type,e.meta.type))try{t.callback.call(t.context,e)}catch(e){console&&console.error&&console.error("Error emitting UV event",e.stack)}}),u.shift(),u.length>0&&t(u[0])}function n(e,t,n){function r(){return o(a.events,function(r){c.disposed||i(e,r.meta.type)&&t.call(n,r)}),u}function s(){return c.disposed=!0,u}var c={type:e,callback:t,disposed:!1,context:n||window};a.listeners.push(c);var u={replay:r,dispose:s};return u}function r(e,t,n){var r=a.on(e,function(){t.apply(n||window,arguments),r.dispose()});return r}function o(e,t){for(var n=e.length,r=0;r<n;r++)t(e[r],r)}function s(e){var t={};for(var n in e)e.hasOwnProperty(n)&&(t[n]=e[n]);return t}function i(e,t){return"string"==typeof e?e===t:e.test(t)}function c(e,t){for(var n=e.length,r=[],o=0;o<n;o++)t(e[o])&&r.push(e[o]);return r}var u=[],a={emit:e,on:n,once:r,events:[],listeners:[]};return a}"object"==typeof module&&module.exports?module.exports=createUv:window&&(window.uv=createUv());
+function createUv(){function e(e){p.level=e}function n(e,n){p.info(e,"event emitted"),n=c(n||{}),n.meta=n.meta||{},n.meta.type=e,a.push(n),r(),v.listeners=f(v.listeners,function(e){return!e.disposed})}function t(e,n,t){function r(){return p.info("Replaying events"),o(function(){s(v.events,function(o){c.disposed||l(e,o.meta.type)&&n.call(t,o)})}),f}function i(){return p.info("Disposing event handler"),c.disposed=!0,f}p.info("Attaching event handler for",e);var c={type:e,callback:n,disposed:!1,context:t||window};v.listeners.push(c);var f={replay:r,dispose:i};return f}function o(e){p.info("Calling event handlers"),u++;try{e()}catch(e){p.error("UV API Error",e.stack)}u--,r()}function r(){if(0===a.length&&p.info("No more events to process"),a.length>0&&u>0&&p.info("Event will be processed later"),a.length>0&&0===u){p.info("Processing event");var e=a.shift();v.events.push(e),o(function(){s(v.listeners,function(n){if(!n.disposed&&l(n.type,e.meta.type))try{n.callback.call(n.context,e)}catch(e){p.error("Error emitting UV event",e.stack)}})})}}function i(e,n,t){var o=v.on(e,function(){n.apply(t||window,arguments),o.dispose()});return o}function s(e,n){for(var t=e.length,o=0;o<t;o++)n(e[o],o)}function c(e){var n={};for(var t in e)e.hasOwnProperty(t)&&(n[t]=e[t]);return n}function l(e,n){return"string"==typeof e?e===n:e.test(n)}function f(e,n){for(var t=e.length,o=[],r=0;r<t;r++)n(e[r])&&o.push(e[r]);return o}var a=[],u=0,p={info:function(){p.level>e.INFO||console&&console.info&&console.info.apply(console,arguments)},error:function(){p.level>e.ERROR||console&&console.error&&console.error.apply(console,arguments)}};e.ALL=0,e.INFO=1,e.ERROR=2,e.OFF=3,e(e.ERROR);var v={on:t,emit:n,once:i,events:[],listeners:[],logLevel:e};return v}"object"==typeof module&&module.exports?module.exports=createUv:window&&(window.uv=createUv());
 ```
 
 API
@@ -143,15 +143,4 @@ The module exports a createUv function if required using commonjs.
 var createUv = require('@qubit/uv-api')
 var uv = createUv()
 uv.emit('ec.View')
-```
-
-### Log Level
-
-The API has a `logLevel` method that can be used to set logging to `OFF`, `ERROR`, `INFO` or `ALL`. The default log level is `ERROR`.
-```js
-var createUv = require('@qubit/uv-api')
-var uv = createUv()
-
-// Turns on info logging (verbose)
-uv.logLevel(uv.logLevel.INFO)
 ```
