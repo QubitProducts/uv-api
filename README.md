@@ -9,32 +9,30 @@ Universal Variable API
 [ ![Codeship Status for qubitdigital/uv-api](https://codeship.com/projects/f8884a40-8ad8-0132-dedc-76c1126cf0b3/status?branch=master)](https://codeship.com/projects/60163)
 
 
-
-_The Universal Variable API moves business level data into another dimension by introducing a completely event based approach to representing page level data flow._
-
-This project contains the source code and tests for the Universal Variable API. A script tag with a minified version of the API should be inserted inline for all html documents, at the top of head, immediately after the `<meta charset... />` tag.
+_The Universal Variable API is a global event emitter used to pass underlying page or view information to third party scripts._
 
 Methodology
 ===========
 
-Universal Variable is used for exposing internal data to third party businesses integrating technology with websites and apps. Until recently it has sufficed to provide a global object with an ecommerce-based schema however as web and mobile apps become more prominant it has become difficult to represent data changes as the visitor navigates the app with few or no page reloads.
+Historically, a global variable named `window.universal_variable` was used for exposing web page or view information to third party scripts however this state based model was too basic and did not fit well with applications that did not do a full page reload.
 
+Using the UV API all data is exposed as events using `window.uv`. All events conform to schemas defined in the [QProtocol Schemas](https://github.com/qubitdigital/qprotocol-schemas).
 
-Moving forward all data is exposed as events using a global API. There is a range of event schemas to represent data for many different use cases, namespacing is used to group events that are related. Event schemas contain nested objects that also have schema. Note that the schemas have been built so that events carry a lot of relevant embedded information to avoid the need to join between events. Though there is a lot of replicated data in the schema, the embeddeding severly reduces lookup time and increases ease of use.
+Setting up and using the UV API
+===============================
+
+The UV API should be included as an inline script on the webpage at the top of head, immediately after the `<meta charset... />` tag. By embedding the API in the head synchronously, any script in the page is able to emit or handle events without polling or waiting for asynchronous scripts to load.
+
+```html
+<script>
+!function(){function n(){function n(n){p.level=n}function e(n,e){p.info(n,"event emitted"),e=c(e||{}),e.meta=e.meta||{},e.meta.type=n,u.push(e),r(),v.listeners=f(v.listeners,function(n){return!n.disposed})}function o(n,e,o){function r(){return p.info("Replaying events"),t(function(){s(v.events,function(t){c.disposed||l(n,t.meta.type)&&e.call(o,t)})}),f}function i(){return p.info("Disposing event handler"),c.disposed=!0,f}p.info("Attaching event handler for",n);var c={type:n,callback:e,disposed:!1,context:o||window};v.listeners.push(c);var f={replay:r,dispose:i};return f}function t(n){p.info("Calling event handlers"),a++;try{n()}catch(n){p.error("UV API Error",n.stack)}a--,r()}function r(){if(0===u.length&&p.info("No more events to process"),u.length>0&&a>0&&p.info("Event will be processed later"),u.length>0&&0===a){p.info("Processing event");var n=u.shift();v.events.push(n),t(function(){s(v.listeners,function(e){if(!e.disposed&&l(e.type,n.meta.type))try{e.callback.call(e.context,n)}catch(n){p.error("Error emitting UV event",n.stack)}})})}}function i(n,e,o){var t=v.on(n,function(){e.apply(o||window,arguments),t.dispose()});return t}function s(n,e){for(var o=n.length,t=0;t<o;t++)e(n[t],t)}function c(n){var e={};for(var o in n)n.hasOwnProperty(o)&&(e[o]=n[o]);return e}function l(n,e){return"string"==typeof n?n===e:n.test(e)}function f(n,e){for(var o=n.length,t=[],r=0;r<o;r++)e(n[r])&&t.push(n[r]);return t}var u=[],a=0,p={info:function(){p.level>n.INFO||console&&console.info&&console.info.apply(console,arguments)},error:function(){p.level>n.ERROR||console&&console.error&&console.error.apply(console,arguments)}};n.ALL=0,n.INFO=1,n.ERROR=2,n.OFF=3,n(n.ERROR);var v={on:o,emit:e,once:i,events:[],listeners:[],logLevel:n};return v}"object"==typeof module&&module.exports?module.exports=n:window&&(window.uv=n())}();
+</script>
+```
 
 Compatibility
 =============
 
 Tested in IE8+, Firefox, Opera, Chrome and Safari.
-
-Minified snippet
-===
-
-For embedding onto client websites
-
-```js
-!function(){function n(){function n(n){p.level=n}function e(n,e){p.info(n,"event emitted"),e=c(e||{}),e.meta=e.meta||{},e.meta.type=n,u.push(e),r(),v.listeners=f(v.listeners,function(n){return!n.disposed})}function o(n,e,o){function r(){return p.info("Replaying events"),t(function(){s(v.events,function(t){c.disposed||l(n,t.meta.type)&&e.call(o,t)})}),f}function i(){return p.info("Disposing event handler"),c.disposed=!0,f}p.info("Attaching event handler for",n);var c={type:n,callback:e,disposed:!1,context:o||window};v.listeners.push(c);var f={replay:r,dispose:i};return f}function t(n){p.info("Calling event handlers"),a++;try{n()}catch(n){p.error("UV API Error",n.stack)}a--,r()}function r(){if(0===u.length&&p.info("No more events to process"),u.length>0&&a>0&&p.info("Event will be processed later"),u.length>0&&0===a){p.info("Processing event");var n=u.shift();v.events.push(n),t(function(){s(v.listeners,function(e){if(!e.disposed&&l(e.type,n.meta.type))try{e.callback.call(e.context,n)}catch(n){p.error("Error emitting UV event",n.stack)}})})}}function i(n,e,o){var t=v.on(n,function(){e.apply(o||window,arguments),t.dispose()});return t}function s(n,e){for(var o=n.length,t=0;t<o;t++)e(n[t],t)}function c(n){var e={};for(var o in n)n.hasOwnProperty(o)&&(e[o]=n[o]);return e}function l(n,e){return"string"==typeof n?n===e:n.test(e)}function f(n,e){for(var o=n.length,t=[],r=0;r<o;r++)e(n[r])&&t.push(n[r]);return t}var u=[],a=0,p={info:function(){p.level>n.INFO||console&&console.info&&console.info.apply(console,arguments)},error:function(){p.level>n.ERROR||console&&console.error&&console.error.apply(console,arguments)}};n.ALL=0,n.INFO=1,n.ERROR=2,n.OFF=3,n(n.ERROR);var v={on:o,emit:e,once:i,events:[],listeners:[],logLevel:n};return v}"object"==typeof module&&module.exports?module.exports=n:window&&(window.uv=n())}();
-```
 
 API
 ===
@@ -129,12 +127,12 @@ emit('ec.Product.View')
 
 The events array is a cache of events emitted since the last page load. By iterating over the array it is possible to interpret the user journey or the current state of the page.
 
-### Deliver module
+### Qubit NPM module
 
-The uv-api is available on the deliver
+The uv-api is available on the qubit registry as `@qubit/uv-api`
 
 ```bash
-deliver install @qubit/uv-api
+npm install @qubit/uv-api --save
 ```
 
 The module exports a createUv function if required using commonjs.
