@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qubitdigital/uv-api.git"
+    "url": "https://github.com/qubitproducts/uv-api.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/qubitdigital/uv-api/issues"
+    "url": "https://github.com/qubitproducts/uv-api/issues"
   },
-  "homepage": "https://github.com/qubitdigital/uv-api",
+  "homepage": "https://github.com/qubitproducts/uv-api",
   "dependencies": {},
   "devDependencies": {
     "karma": "^0.13.19",

@@ -16,7 +16,7 @@ Methodology
 
 Historically, a global variable named `window.universal_variable` was used for exposing web page or view information to third party scripts however this state based model was too basic and did not fit well with applications that did not do a full page reload.
 
-Using the UV API all data is exposed as events using `window.uv`. All events conform to schemas defined in the [QProtocol Schemas](https://github.com/qubitdigital/qprotocol-schemas).
+Using the UV API all data is exposed as events using `window.uv`. All events conform to schemas defined in the QProtocol schemas.
 
 Setting up and using the UV API
 ===============================
@@ -129,18 +129,18 @@ emit('ecProduct')
 
 The events array is a cache of events emitted since the last page load. By iterating over the array it is possible to interpret the user journey or the current state of the page.
 
-### Qubit NPM module
+### NPM module
 
-The uv-api is available on the qubit registry as `@qubit/uv-api`
+The uv-api is available on the NPM registry.
 
 ```bash
-npm install uv-api --save
+npm i uv-api --save
 ```
 
 The module exports a createUv function if required using commonjs.
 
 ```js
-var createUv = require('@qubit/uv-api')
+var createUv = require('uv-api')
 var uv = createUv()
 uv.emit('ecView')
 ```

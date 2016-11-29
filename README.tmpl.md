@@ -13,7 +13,7 @@ Methodology
 
 Historically, a global variable named `window.universal_variable` was used for exposing web page or view information to third party scripts however this state based model was too basic and did not fit well with applications that did not do a full page reload.
 
-Using the UV API all data is exposed as events using `window.uv`. All events conform to schemas defined in the [QProtocol Schemas](https://github.com/qubitdigital/qprotocol-schemas).
+Using the UV API all data is exposed as events using `window.uv`. All events conform to schemas defined in the QProtocol schemas.
 
 Setting up and using the UV API
 ===============================
