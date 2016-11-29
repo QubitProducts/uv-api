@@ -44,7 +44,7 @@ API
 Emits an event with the __type__ and __data__ specified. The __data__ should conform to the schema for the event __type__ emitted. All events that are emitted are given a `meta` property with the event `type`.
 
 ```js
-uv.emit('ec.ProductView', {
+uv.emit('ecProduct', {
   product: {
     id: '112-334-a',
     price: 6.99,
@@ -52,9 +52,10 @@ uv.emit('ec.ProductView', {
     category: ['Party Accessories', 'Birthday Parties']
   },
   color: 'red',
-  stock: 6
+  stock: 6,
+  eventType: 'detail'
 })
-// => emits an ec.ProductView event
+// => emits an ecProduct event
 ```
 
 The emitted event will have meta attached.
@@ -62,7 +63,7 @@ The emitted event will have meta attached.
 ```json
 {
   "meta": {
-    "type": "ec.ProductView"
+    "type": "ecProduct"
   },
   "product": {
     "id": "112-334-a",
@@ -71,7 +72,8 @@ The emitted event will have meta attached.
     "category": ["Party Accessories", "Birthday Parties"]
   },
   "color": "red",
-  "stock": 6
+  "stock": 6,
+  "eventType": "detail"
 }
 ```
 
@@ -83,10 +85,10 @@ The emitted event will have meta attached.
 Attaches an event __handler__ to be called when a certain event __type__ is emitted. The __handler__ will be passed the event data and will be bound to the __context__ object, if one is passed. If a regex is passed, the handler will execute on events that match the regex.
 
 ```js
-uv.on('ec.Product.View', function (data) {
+uv.on('ecProduct', function (data) {
   console.log(data)
 })
-// => logs data when an `ec.Product.View` event is emitted
+// => logs data when an `ecProduct` event is emitted
 
 var subscription = uv.on(/.*/, function (data) {
   console.log(data)
@@ -113,13 +115,13 @@ Attaches an event __handler__ that will be called once, only on the next event e
 
 
 ```js
-uv.once('ec.Product.View', function (data) {
+uv.once('ecProduct', function (data) {
   console.log(data)
 })
-emit('ec.Product.View')
+emit('ecProduct')
 // => logs data
 
-emit('ec.Product.View')
+emit('ecProduct')
 // => does not log
 ```
 
@@ -132,7 +134,7 @@ The events array is a cache of events emitted since the last page load. By itera
 The uv-api is available on the qubit registry as `@qubit/uv-api`
 
 ```bash
-npm install @qubit/uv-api --save
+npm install uv-api --save
 ```
 
 The module exports a createUv function if required using commonjs.
@@ -140,5 +142,5 @@ The module exports a createUv function if required using commonjs.
 ```js
 var createUv = require('@qubit/uv-api')
 var uv = createUv()
-uv.emit('ec.View')
+uv.emit('ecView')
 ```
