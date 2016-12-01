@@ -4,7 +4,7 @@
    */
   if (typeof module === 'object' && module.exports) {
     module.exports = createUv
-  } else if (window) {
+  } else if (window && window.uv === undefined) {
     window.uv = createUv()
   }
 
