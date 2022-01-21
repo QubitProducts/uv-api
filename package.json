@@ -3,6 +3,7 @@
   "version": "4.2.0",
   "description": "The Universal Variable API moves business level data into another dimension by introducing a completely event based approach to representing page level data flow.",
   "main": "uv-api.js",
+  "types": "uv-api.d.ts",
   "scripts": {
     "test": "make test"
   },
