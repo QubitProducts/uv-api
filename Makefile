@@ -3,7 +3,7 @@
 bootstrap:
 	@npm install
 
-test: bootstrap
+test:
 	@npx standard
 	@npx karma start --single-run=true
 
